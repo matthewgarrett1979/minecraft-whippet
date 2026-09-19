@@ -4,7 +4,7 @@ A Fabric mod that adds whippets to Minecraft: tameable sighthounds that are
 faster than anything else on four legs, sleep through most of the day, and
 periodically detonate into the zoomies.
 
-![Five whippets in a flat world — white, black, blue (sitting, in a red collar), brindle and fawn](docs/whippets.png)
+![Six whippets in a flat world — white, black, blue (sitting, in a red collar), brindle, fawn, and Bonnie the blue brindle](docs/whippets.png)
 
 | | |
 |---|---|
@@ -15,8 +15,8 @@ periodically detonate into the zoomies.
 
 ## What it adds
 
-**The whippet** (`whippets:whippet`) — a tameable animal with five coats: fawn,
-brindle, blue, black and white, the last of which is deliberately rare. Coats
+**The whippet** (`whippets:whippet`) — a tameable animal with six coats: fawn,
+brindle, blue, black, white (deliberately rare) and Bonnie's blue brindle. Coats
 are rolled on spawn, saved per dog, and inherited from one parent or the other
 when two whippets breed (with a one-in-ten throwback to a random coat).
 
@@ -40,6 +40,11 @@ breed with the same foods, take a collar from any dye, and carry 24 health
 **Whippet whistle** — craft from two iron nuggets and a bone. Blowing it stands
 every whippet you own within 48 blocks back up, cancels whatever it was doing,
 and recalls the distant ones to you. Five-second cooldown.
+
+**Bonnie** — the blue brindle coat is drawn from a real whippet: silver face,
+white blaze down the muzzle, white throat and chest, four white feet and a fine
+brindle over a warm fawn. Call any whippet `Bonnie` with a name tag and she
+wears that coat whatever she was born in, the way a rabbit named Toast does.
 
 **Where they live** — plains, sunflower plains, meadows, savanna and savanna
 plateau, in ones and twos.

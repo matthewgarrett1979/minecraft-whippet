@@ -61,6 +61,16 @@ def faces(box: str) -> dict[str, tuple[int, int, int, int]]:
     }
 
 
+def blend(a: tuple[int, int, int, int], b: tuple[int, int, int, int], amount: float) -> tuple[int, int, int, int]:
+    """Mixes two colours; amount is how much of b to take."""
+    return (
+        round(a[0] + (b[0] - a[0]) * amount),
+        round(a[1] + (b[1] - a[1]) * amount),
+        round(a[2] + (b[2] - a[2]) * amount),
+        a[3],
+    )
+
+
 def shift(color: tuple[int, int, int, int], amount: float) -> tuple[int, int, int, int]:
     """Lightens (amount > 0) or darkens (amount < 0) a colour."""
     r, g, b, a = color
@@ -152,9 +162,12 @@ class Coat:
         mask: tuple[int, int, int, int],
         *,
         stripe: tuple[int, int, int, int] | None = None,
+        stripe_period: int = 3,
         socks: bool = True,
         blaze: bool = True,
         patches: bool = False,
+        grey_face: tuple[int, int, int, int] | None = None,
+        white_front: bool = False,
         nose: tuple[int, int, int, int] = (26, 21, 23, 255),
     ):
         self.name = name
@@ -162,9 +175,14 @@ class Coat:
         self.belly = belly
         self.mask = mask
         self.stripe = stripe
+        self.stripe_period = stripe_period
         self.socks = socks
         self.blaze = blaze
         self.patches = patches
+        # A silvered face, the way a blue brindle greys off around the muzzle.
+        self.grey_face = grey_face
+        # White that runs from the chin down the throat and over the belly.
+        self.white_front = white_front
         self.nose = nose
 
 
@@ -200,6 +218,18 @@ COATS = [
         blaze=False,
         nose=(38, 30, 30, 255),
     ),
+    # Modelled on Bonnie: a blue brindle with a silver face, a white blaze,
+    # white from the chin all the way down the chest, and four white feet.
+    Coat(
+        "bonnie",
+        (164, 146, 122, 255),
+        (242, 237, 228, 255),
+        (107, 100, 89, 255),
+        stripe=(131, 116, 96, 255),
+        stripe_period=4,
+        grey_face=(146, 141, 132, 255),
+        white_front=True,
+    ),
 ]
 
 
@@ -213,11 +243,15 @@ def draw_coat(coat: Coat) -> Image:
         image.fill_face(box, "top", highlight)
 
     # Deep chest and tucked belly: the underside is always paler.
+    flank_belly = blend(coat.base, coat.belly, 0.55)
+
     for box in ("chest", "loin", "neck"):
         image.fill_face(box, "bottom", coat.belly)
-        for face in SIDES:
+        for face in ("north", "south"):
             image.face_rows_from_bottom(box, face, 2, coat.belly)
-            image.face_rows_from_bottom(box, face, 1, shift(coat.belly, -0.08))
+        for face in FLANKS:
+            image.face_rows_from_bottom(box, face, 2, flank_belly)
+            image.face_rows_from_bottom(box, face, 1, shift(flank_belly, -0.08))
 
     for box in ("chest", "loin", "haunch"):
         for face in FLANKS:
@@ -226,7 +260,7 @@ def draw_coat(coat: Coat) -> Image:
     if coat.stripe:
         for box in BODY_BOXES + ("leg", "skull"):
             for face in FLANKS + ("top",):
-                image.stripe_face(box, face, coat.stripe)
+                image.stripe_face(box, face, coat.stripe, coat.stripe_period)
 
     if coat.patches:
         # An Irish-marked white dog: colour over the ears, skull and one hip.
@@ -240,6 +274,11 @@ def draw_coat(coat: Coat) -> Image:
     else:
         for face in ("top", "west", "east", "north"):
             image.fill_face("ear", face, shift(coat.base, -0.12))
+
+    if coat.grey_face:
+        # A silvered skull, the way a blue brindle greys off around the face.
+        for face in FLANKS + ("top", "north"):
+            image.fill_face("skull", face, coat.grey_face)
 
     # Dark mask over the muzzle, black nose on the front of it.
     for face in ("top", "west", "east", "south"):
@@ -257,15 +296,31 @@ def draw_coat(coat: Coat) -> Image:
     image.set(ex + 1, ey + 1, EYE)
 
     if coat.blaze:
-        # White blaze up the front of the chest, and a stripe between the eyes.
+        # The blaze: a white stripe up the bridge of the muzzle and on over the
+        # forehead, with a white chin and lip under it.
+        white = coat.belly if coat.white_front else WHITE
+        mtx, mty, mtw, mth = faces("muzzle")["top"]
+        image.rect(mtx + mtw // 2, mty, 1, mth, white)
+        stx, sty, stw, sth = faces("skull")["top"]
+        image.rect(stx + stw // 2, sty, 1, sth, white)
+        image.fill_face("muzzle", "bottom", white)
+        for face in FLANKS:
+            image.face_rows_from_bottom("muzzle", face, 1, white)
         cx, cy, cw, ch = faces("chest")["north"]
-        image.rect(cx + 1, cy + ch - 4, cw - 2, 3, WHITE)
-        sx, sy, sw, _ = skull["north"]
-        image.rect(sx + sw // 2, sy, 1, 2, WHITE)
+        image.rect(cx + 1, cy + ch - 4, cw - 2, 3, white)
+
+    if coat.white_front:
+        # Chin, throat, chest and belly are one unbroken run of white.
+        for box in ("neck", "chest", "loin"):
+            image.fill_face(box, "bottom", coat.belly)
+            image.face_rows_from_bottom(box, "north", 2, coat.belly)
+        image.fill_face("neck", "north", coat.belly)
+        cx, cy, cw, ch = faces("chest")["north"]
+        image.rect(cx + 1, cy + 1, cw - 2, ch - 1, coat.belly)
 
     if coat.socks:
         for face in SIDES:
-            image.face_rows_from_bottom("leg", face, 3, WHITE)
+            image.face_rows_from_bottom("leg", face, 2, WHITE)
             image.face_rows_from_bottom("leg", face, 1, shift(WHITE, -0.10))
         image.fill_face("leg", "bottom", shift(WHITE, -0.16))
         # White tip on the whip tail.

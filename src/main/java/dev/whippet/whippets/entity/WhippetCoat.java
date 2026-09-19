@@ -13,7 +13,9 @@ public enum WhippetCoat {
 	BRINDLE("brindle", 4),
 	BLUE("blue", 3),
 	BLACK("black", 3),
-	WHITE("white", 1);
+	WHITE("white", 1),
+	/** Blue brindle with a silver face, a white blaze and four white feet. */
+	BONNIE("bonnie", 4);
 
 	private static final WhippetCoat[] VALUES = values();
 	private static final int TOTAL_WEIGHT;

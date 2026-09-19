@@ -1,11 +1,15 @@
 package dev.whippet.whippets.client;
 
+import dev.whippet.whippets.entity.WhippetCoat;
 import dev.whippet.whippets.entity.WhippetEntity;
 import net.minecraft.client.render.entity.AgeableMobEntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.util.Identifier;
 
 public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntity, WhippetEntityRenderState, WhippetEntityModel> {
+	/** Name a whippet after the blue brindle this mod was drawn from and it looks the part. */
+	private static final String BONNIE = "Bonnie";
+
 	public WhippetEntityRenderer(EntityRendererFactory.Context context) {
 		super(
 			context,
@@ -26,10 +30,14 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 		return new WhippetEntityRenderState();
 	}
 
+	private static boolean isNamedBonnie(WhippetEntity whippet) {
+		return whippet.getCustomName() != null && BONNIE.equals(whippet.getCustomName().getString());
+	}
+
 	@Override
 	public void updateRenderState(WhippetEntity whippet, WhippetEntityRenderState state, float tickProgress) {
 		super.updateRenderState(whippet, state, tickProgress);
-		state.texture = whippet.getTextureId();
+		state.texture = isNamedBonnie(whippet) ? WhippetCoat.BONNIE.getTexture() : whippet.getTextureId();
 		state.inSittingPose = whippet.isInSittingPose();
 		state.zooming = whippet.isZooming();
 		state.tailAngle = whippet.getTailAngle();
