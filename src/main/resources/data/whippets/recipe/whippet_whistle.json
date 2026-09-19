@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"key": {
+		"B": "minecraft:bone",
+		"N": "minecraft:iron_nugget"
+	},
+	"pattern": [
+		"NN",
+		"NB"
+	],
+	"result": {
+		"count": 1,
+		"id": "whippets:whippet_whistle"
+	}
+}

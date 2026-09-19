@@ -1,0 +1,8 @@
+{
+	"entity.whippets.whippet": "Whippet",
+	"item.whippets.whippet_spawn_egg": "Whippet Spawn Egg",
+	"item.whippets.whippet_whistle": "Whippet Whistle",
+	"item.whippets.whippet_whistle.recalled": "%s whippet(s) coming back",
+	"item.whippets.whippet_whistle.nobody": "Nothing but wind",
+	"tag.item.whippets.whippet_food": "Whippet Food"
+}

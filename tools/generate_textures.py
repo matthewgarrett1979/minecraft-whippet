@@ -1,0 +1,436 @@
+#!/usr/bin/env python3
+"""Generates every PNG the Whippets mod ships.
+
+The mod has no binary art assets that were drawn by hand: the entity sheets, the
+item icons and the mod icon are all produced here, so a coat colour is a couple
+of hex values rather than a trip through an image editor. Run it from anywhere:
+
+    python3 tools/generate_textures.py
+
+Entity UVs follow Minecraft's cuboid layout. For a box at (u, v) with size
+(w, h, d) the six faces land like this:
+
+    top    (u+d,     v,     w, d)      bottom (u+d+w,   v,     w, d)
+    west   (u,       v+d,   d, h)      north  (u+d,     v+d,   w, h)
+    east   (u+d+w,   v+d,   d, h)      south  (u+d+w+d, v+d,   w, h)
+
+"north" is the face pointing the way the mob looks. The box table below must stay
+in step with WhippetEntityModel.getModelData().
+"""
+
+from __future__ import annotations
+
+import pathlib
+import struct
+import zlib
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+ASSETS = ROOT / "src" / "main" / "resources" / "assets" / "whippets"
+ENTITY_DIR = ASSETS / "textures" / "entity" / "whippet"
+ITEM_DIR = ASSETS / "textures" / "item"
+
+TRANSPARENT = (0, 0, 0, 0)
+
+# name -> (u, v, width, height, depth)
+BOXES = {
+    "skull": (0, 0, 4, 4, 4),
+    "muzzle": (20, 0, 3, 2, 3),
+    "ear": (36, 0, 2, 2, 1),
+    "chest": (0, 12, 5, 6, 7),
+    "loin": (26, 12, 4, 4, 6),
+    "leg": (0, 28, 2, 9, 2),
+    "haunch": (10, 28, 3, 4, 3),
+    "tail": (26, 28, 1, 9, 1),
+    "neck": (32, 28, 3, 3, 5),
+}
+
+BODY_BOXES = ("chest", "loin", "neck", "haunch", "tail")
+FLANKS = ("west", "east")
+SIDES = ("west", "north", "east", "south")
+
+
+def faces(box: str) -> dict[str, tuple[int, int, int, int]]:
+    u, v, w, h, d = BOXES[box]
+    return {
+        "top": (u + d, v, w, d),
+        "bottom": (u + d + w, v, w, d),
+        "west": (u, v + d, d, h),
+        "north": (u + d, v + d, w, h),
+        "east": (u + d + w, v + d, d, h),
+        "south": (u + d + w + d, v + d, w, h),
+    }
+
+
+def shift(color: tuple[int, int, int, int], amount: float) -> tuple[int, int, int, int]:
+    """Lightens (amount > 0) or darkens (amount < 0) a colour."""
+    r, g, b, a = color
+    if amount >= 0:
+        return (
+            round(r + (255 - r) * amount),
+            round(g + (255 - g) * amount),
+            round(b + (255 - b) * amount),
+            a,
+        )
+    return (round(r * (1 + amount)), round(g * (1 + amount)), round(b * (1 + amount)), a)
+
+
+class Image:
+    def __init__(self, width: int, height: int, fill=TRANSPARENT):
+        self.width = width
+        self.height = height
+        self.pixels = [[fill] * width for _ in range(height)]
+
+    def set(self, x: int, y: int, color) -> None:
+        if 0 <= x < self.width and 0 <= y < self.height:
+            self.pixels[y][x] = color
+
+    def rect(self, x: int, y: int, w: int, h: int, color) -> None:
+        for dy in range(h):
+            for dx in range(w):
+                self.set(x + dx, y + dy, color)
+
+    def fill_face(self, box: str, face: str, color) -> None:
+        x, y, w, h = faces(box)[face]
+        self.rect(x, y, w, h, color)
+
+    def fill_box(self, box: str, color) -> None:
+        for face in faces(box):
+            self.fill_face(box, face, color)
+
+    def face_row(self, box: str, face: str, row: int, color) -> None:
+        """Paints one row of a face, counted from its top edge."""
+        x, y, w, h = faces(box)[face]
+        if 0 <= row < h:
+            self.rect(x, y + row, w, 1, color)
+
+    def face_rows_from_bottom(self, box: str, face: str, count: int, color) -> None:
+        x, y, w, h = faces(box)[face]
+        self.rect(x, y + max(0, h - count), w, min(count, h), color)
+
+    def stripe_face(self, box: str, face: str, color, period: int = 3) -> None:
+        """Vertical brindle striping: columns on the flanks, rows on top/bottom."""
+        x, y, w, h = faces(box)[face]
+        if face in ("top", "bottom"):
+            for dy in range(h):
+                if dy % period == 0:
+                    self.rect(x, y + dy, w, 1, color)
+        else:
+            for dx in range(w):
+                if dx % period == 0:
+                    self.rect(x + dx, y, 1, h, color)
+
+    def write(self, path: pathlib.Path) -> None:
+        raw = bytearray()
+        for row in self.pixels:
+            raw.append(0)
+            for r, g, b, a in row:
+                raw += bytes((r, g, b, a))
+
+        def chunk(tag: bytes, data: bytes) -> bytes:
+            return (
+                struct.pack(">I", len(data))
+                + tag
+                + data
+                + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+            )
+
+        png = b"\x89PNG\r\n\x1a\n"
+        png += chunk(b"IHDR", struct.pack(">IIBBBBB", self.width, self.height, 8, 6, 0, 0, 0))
+        png += chunk(b"IDAT", zlib.compress(bytes(raw), 9))
+        png += chunk(b"IEND", b"")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(png)
+        print(f"wrote {path.relative_to(ROOT)}")
+
+
+class Coat:
+    def __init__(
+        self,
+        name: str,
+        base: tuple[int, int, int, int],
+        belly: tuple[int, int, int, int],
+        mask: tuple[int, int, int, int],
+        *,
+        stripe: tuple[int, int, int, int] | None = None,
+        socks: bool = True,
+        blaze: bool = True,
+        patches: bool = False,
+        nose: tuple[int, int, int, int] = (26, 21, 23, 255),
+    ):
+        self.name = name
+        self.base = base
+        self.belly = belly
+        self.mask = mask
+        self.stripe = stripe
+        self.socks = socks
+        self.blaze = blaze
+        self.patches = patches
+        self.nose = nose
+
+
+WHITE = (240, 234, 226, 255)
+EYE = (23, 17, 15, 255)
+BROW = (0, 0, 0, 0)
+
+COATS = [
+    Coat("fawn", (199, 150, 99, 255), (230, 203, 168, 255), (110, 82, 56, 255)),
+    Coat(
+        "brindle",
+        (122, 92, 62, 255),
+        (168, 138, 102, 255),
+        (46, 34, 24, 255),
+        stripe=(58, 42, 28, 255),
+    ),
+    Coat(
+        "blue",
+        (115, 122, 128, 255),
+        (154, 161, 167, 255),
+        (69, 76, 82, 255),
+        socks=False,
+        blaze=False,
+        nose=(42, 46, 51, 255),
+    ),
+    Coat("black", (42, 42, 44, 255), (58, 58, 61, 255), (26, 26, 28, 255)),
+    Coat(
+        "white",
+        WHITE,
+        (255, 255, 255, 255),
+        (199, 150, 99, 255),
+        patches=True,
+        blaze=False,
+        nose=(38, 30, 30, 255),
+    ),
+]
+
+
+def draw_coat(coat: Coat) -> Image:
+    image = Image(64, 64)
+    shade = shift(coat.base, -0.18)
+    highlight = shift(coat.base, 0.10)
+
+    for box in BOXES:
+        image.fill_box(box, coat.base)
+        image.fill_face(box, "top", highlight)
+
+    # Deep chest and tucked belly: the underside is always paler.
+    for box in ("chest", "loin", "neck"):
+        image.fill_face(box, "bottom", coat.belly)
+        for face in SIDES:
+            image.face_rows_from_bottom(box, face, 2, coat.belly)
+            image.face_rows_from_bottom(box, face, 1, shift(coat.belly, -0.08))
+
+    for box in ("chest", "loin", "haunch"):
+        for face in FLANKS:
+            image.face_row(box, face, 0, shade)
+
+    if coat.stripe:
+        for box in BODY_BOXES + ("leg", "skull"):
+            for face in FLANKS + ("top",):
+                image.stripe_face(box, face, coat.stripe)
+
+    if coat.patches:
+        # An Irish-marked white dog: colour over the ears, skull and one hip.
+        for face in ("top", "west", "east", "north", "south"):
+            image.fill_face("ear", face, coat.mask)
+        image.fill_face("skull", "top", coat.mask)
+        image.face_row("skull", "west", 0, coat.mask)
+        image.face_row("skull", "east", 0, coat.mask)
+        image.fill_face("haunch", "east", coat.mask)
+        image.fill_face("haunch", "top", coat.mask)
+    else:
+        for face in ("top", "west", "east", "north"):
+            image.fill_face("ear", face, shift(coat.base, -0.12))
+
+    # Dark mask over the muzzle, black nose on the front of it.
+    for face in ("top", "west", "east", "south"):
+        image.fill_face("muzzle", face, coat.mask)
+    image.fill_face("muzzle", "north", coat.mask)
+    image.fill_face("muzzle", "bottom", shift(coat.mask, 0.22))
+    mx, my, mw, _ = faces("muzzle")["north"]
+    image.rect(mx, my, mw, 1, coat.nose)
+
+    # Eyes, one pixel each, set well forward on a narrow skull.
+    skull = faces("skull")
+    wx, wy, ww, _ = skull["west"]
+    ex, ey, _, _ = skull["east"]
+    image.set(wx + ww - 2, wy + 1, EYE)
+    image.set(ex + 1, ey + 1, EYE)
+
+    if coat.blaze:
+        # White blaze up the front of the chest, and a stripe between the eyes.
+        cx, cy, cw, ch = faces("chest")["north"]
+        image.rect(cx + 1, cy + ch - 4, cw - 2, 3, WHITE)
+        sx, sy, sw, _ = skull["north"]
+        image.rect(sx + sw // 2, sy, 1, 2, WHITE)
+
+    if coat.socks:
+        for face in SIDES:
+            image.face_rows_from_bottom("leg", face, 3, WHITE)
+            image.face_rows_from_bottom("leg", face, 1, shift(WHITE, -0.10))
+        image.fill_face("leg", "bottom", shift(WHITE, -0.16))
+        # White tip on the whip tail.
+        for face in SIDES:
+            image.face_rows_from_bottom("tail", face, 2, WHITE)
+        image.fill_face("tail", "bottom", WHITE)
+
+    return image
+
+
+def draw_collar() -> Image:
+    """A band near the front of the neck, tinted in-game by the dye colour.
+
+    Only the front of the neck box clears the chest, so the band sits a slice or
+    two back from the head end — which is where a collar sits on a real dog too.
+    Within a face, the depth axis runs back-to-front on the west face, front-to-
+    back on the east face, and back-to-front down the rows of the top and bottom.
+    """
+    image = Image(64, 64)
+    leather = (255, 255, 255, 255)
+    buckle = (215, 215, 215, 255)
+    offset = 1
+    band = 2
+
+    x, y, fw, fh = faces("neck")["west"]
+    image.rect(x + fw - offset - band, y, band, fh, leather)
+    x, y, fw, fh = faces("neck")["east"]
+    image.rect(x + offset, y, band, fh, leather)
+    for face in ("top", "bottom"):
+        x, y, fw, fh = faces("neck")[face]
+        image.rect(x, y + fh - offset - band, fw, band, leather)
+
+    # A tag hanging under the band.
+    x, y, fw, fh = faces("neck")["bottom"]
+    image.set(x + fw // 2, y + fh - offset - band, buckle)
+    return image
+
+
+def from_map(rows: list[str], palette: dict[str, tuple[int, int, int, int]]) -> Image:
+    """Builds a small icon from an ASCII map; '.' is left transparent."""
+    image = Image(len(rows[0]), len(rows))
+    for y, row in enumerate(rows):
+        for x, key in enumerate(row):
+            if key != ".":
+                image.set(x, y, palette[key])
+    return image
+
+
+def draw_spawn_egg() -> Image:
+    """Spawn-egg silhouette: fawn shell with dark brindle speckles."""
+    return from_map(
+        [
+            "................",
+            ".....######.....",
+            "....#BBBBBB#....",
+            "...#BBSBBBBB#...",
+            "...#BBBBBSBB#...",
+            "..#BBBSBBBBBB#..",
+            "..#BSBBBBBSBB#..",
+            "..#BBBBBSBBBB#..",
+            "..#BBSBBBBBBB#..",
+            "..#BBBBBBSBBB#..",
+            "..#BSBBBBBBSB#..",
+            "...#BBBSBBBB#...",
+            "...#BBBBBBSB#...",
+            "....#BBSBBB#....",
+            ".....######.....",
+            "................",
+        ],
+        {
+            "#": (62, 44, 30, 255),
+            "B": (199, 150, 99, 255),
+            "S": (86, 62, 42, 255),
+        },
+    )
+
+
+def draw_whistle() -> Image:
+    """A dog whistle: tapered mouthpiece, steel chamber, ring for the lead."""
+    return from_map(
+        [
+            "................",
+            "................",
+            "................",
+            ".........###....",
+            ".........#.#....",
+            ".........#S#....",
+            "......########..",
+            "....###SSOOSS#..",
+            "..###SSSSSSSS#..",
+            "..#SHSSSSSSSS#..",
+            "..###DDDDDDDD#..",
+            "....##########..",
+            "................",
+            "................",
+            "................",
+            "................",
+        ],
+        {
+            "#": (44, 48, 54, 255),
+            "S": (200, 205, 212, 255),
+            "H": (238, 242, 247, 255),
+            "D": (96, 103, 112, 255),
+            "O": (30, 33, 38, 255),
+        },
+    )
+
+
+def draw_icon() -> Image:
+    """Mod icon: a whippet in profile, standing square, on a warm background."""
+    size = 128
+    image = Image(size, size, (246, 238, 226, 255))
+    edge = (214, 197, 175, 255)
+    dog = (92, 66, 45, 255)
+    dog_light = (124, 92, 64, 255)
+
+    image.rect(0, 0, size, 3, edge)
+    image.rect(0, size - 3, size, 3, edge)
+    image.rect(0, 0, 3, size, edge)
+    image.rect(size - 3, 0, 3, size, edge)
+
+    def ellipse(cx: float, cy: float, rx: float, ry: float, color) -> None:
+        for y in range(size):
+            for x in range(size):
+                if ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.0:
+                    image.set(x, y, color)
+
+    def line(x0: float, y0: float, x1: float, y1: float, thickness: float, color) -> None:
+        steps = int(max(abs(x1 - x0), abs(y1 - y0)) * 3) + 1
+        for i in range(steps + 1):
+            t = i / steps
+            ellipse(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, thickness, thickness, color)
+
+    # Legs first so the body covers their tops.
+    line(48, 70, 42, 104, 3.0, dog)
+    line(52, 70, 56, 104, 3.0, dog)
+    line(84, 70, 80, 104, 3.0, dog)
+    line(88, 70, 96, 104, 3.0, dog)
+    # Deep chest, tucked waist, powerful hindquarters.
+    ellipse(56, 64, 15, 13, dog)
+    ellipse(72, 62, 12, 8, dog)
+    ellipse(88, 62, 14, 12, dog)
+    # Arched neck and narrow head.
+    line(50, 58, 40, 40, 5.0, dog)
+    ellipse(37, 35, 8, 6, dog)
+    ellipse(27, 37, 6, 4, dog)
+    image.rect(24, 35, 3, 2, (32, 26, 24, 255))
+    # Folded ear and eye.
+    ellipse(41, 30, 4, 3, dog_light)
+    image.set(33, 34, (246, 238, 226, 255))
+    # Whip tail: down off the croup, then a flick up at the tip.
+    line(99, 62, 108, 78, 2.5, dog)
+    line(108, 78, 116, 72, 2.0, dog)
+    line(116, 72, 118, 62, 1.5, dog)
+    return image
+
+
+def main() -> None:
+    for coat in COATS:
+        draw_coat(coat).write(ENTITY_DIR / f"whippet_{coat.name}.png")
+    draw_collar().write(ENTITY_DIR / "whippet_collar.png")
+    draw_spawn_egg().write(ITEM_DIR / "whippet_spawn_egg.png")
+    draw_whistle().write(ITEM_DIR / "whippet_whistle.png")
+    draw_icon().write(ASSETS / "icon.png")
+
+
+if __name__ == "__main__":
+    main()
