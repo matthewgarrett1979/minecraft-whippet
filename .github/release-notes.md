@@ -1,6 +1,10 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.0.3:** the mod is MIT licensed. It was all rights reserved, inherited
+from the repository it started in, which meant nobody could legally run it.
+Use it, change it, ship it in a pack; keep the notice with it. No code changed.
+
 **In 1.0.2:** the dog is rebuilt against photographs of a real whippet. The
 head is a long narrow wedge with almost no stop instead of a brick; the ears are
 rose ears, small flaps folded back along the skull, not a wolf's upright
@@ -16,7 +20,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.0.2.jar`** from the assets below in beside it.
+3. Put **`whippets-1.0.3.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
