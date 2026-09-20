@@ -33,15 +33,15 @@ TRANSPARENT = (0, 0, 0, 0)
 
 # name -> (u, v, width, height, depth)
 BOXES = {
-    "skull": (0, 0, 4, 4, 4),
-    "muzzle": (20, 0, 3, 2, 3),
-    "ear": (36, 0, 2, 2, 1),
+    "skull": (0, 0, 3, 3, 5),
+    "muzzle": (20, 0, 2, 2, 3),
+    "ear": (36, 0, 1, 2, 3),
     "chest": (0, 12, 5, 7, 7),
-    "loin": (26, 12, 4, 4, 6),
+    "loin": (26, 12, 4, 4, 8),
     "leg": (0, 28, 2, 9, 2),
     "haunch": (10, 28, 3, 4, 3),
     "tail": (26, 28, 1, 9, 1),
-    "neck": (32, 28, 3, 3, 5),
+    "neck": (32, 28, 3, 3, 7),
 }
 
 BODY_BOXES = ("chest", "loin", "neck", "haunch", "tail")
@@ -264,16 +264,24 @@ def draw_coat(coat: Coat) -> Image:
 
     if coat.patches:
         # An Irish-marked white dog: colour over the ears, skull and one hip.
-        for face in ("top", "west", "east", "north", "south"):
-            image.fill_face("ear", face, coat.mask)
+        image.fill_box("ear", coat.mask)
         image.fill_face("skull", "top", coat.mask)
         image.face_row("skull", "west", 0, coat.mask)
         image.face_row("skull", "east", 0, coat.mask)
         image.fill_face("haunch", "east", coat.mask)
         image.fill_face("haunch", "top", coat.mask)
     else:
-        for face in ("top", "west", "east", "north"):
-            image.fill_face("ear", face, shift(coat.base, -0.12))
+        image.fill_box("ear", shift(coat.base, -0.26))
+
+    # A rose ear is a folded flap: the leather darkens towards the tip, which is
+    # the back end of the flap, and the fold catches the light along the top.
+    tip = shift(coat.base, -0.42)
+    ex, ey, ew, eh = faces("ear")["west"]
+    image.rect(ex, ey, 1, eh, tip)
+    ex, ey, ew, eh = faces("ear")["east"]
+    image.rect(ex + ew - 1, ey, 1, eh, tip)
+    image.fill_face("ear", "south", tip)
+    image.face_row("ear", "top", 0, shift(coat.base, -0.14))
 
     if coat.grey_face:
         # A silvered skull, the way a blue brindle greys off around the face.
@@ -301,8 +309,10 @@ def draw_coat(coat: Coat) -> Image:
         white = coat.belly if coat.white_front else WHITE
         mtx, mty, mtw, mth = faces("muzzle")["top"]
         image.rect(mtx + mtw // 2, mty, 1, mth, white)
+        # The blaze dies out between the eyes rather than running back over the
+        # whole skull, so only the front of the skull top takes it.
         stx, sty, stw, sth = faces("skull")["top"]
-        image.rect(stx + stw // 2, sty, 1, sth, white)
+        image.rect(stx + stw // 2, sty + sth - 2, 1, 2, white)
         image.fill_face("muzzle", "bottom", white)
         for face in FLANKS:
             image.face_rows_from_bottom("muzzle", face, 1, white)

@@ -18,10 +18,28 @@ import net.minecraft.util.math.MathHelper;
  * narrow enough to look like it was drawn with a ruler.
  */
 public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
+	// A puppy is the adult at half scale with a three-quarter-scale head. The
+	// offsets are what put that head back on the end of the shrunken neck.
 	public static final ModelTransformer BABY_TRANSFORMER = new BabyModelTransformer(
-		true, 6.0F, 2.5F, 2.0F, 2.0F, 22.0F, Set.of(EntityModelPartNames.HEAD)
+		true, 14.3F, 2.4F, 2.0F, 2.0F, 24.0F, Set.of(EntityModelPartNames.HEAD)
 	);
+	// Where each part sits on a standing adult. The poses below work in these
+	// units, and puppies are the same model at half scale, so every move has to
+	// be measured from here rather than written out as an absolute.
+	private static final float HEAD_Y = 5.1F;
+	private static final float HEAD_Z = -7.2F;
+	private static final float NECK_Y = 9.8F;
+	private static final float NECK_Z = -3.5F;
+	private static final float BODY_Y = 11.5F;
+	private static final float BODY_Z = 0.0F;
+	private static final float LEG_Y = 15.0F;
+	private static final float FRONT_LEG_Z = -4.5F;
+	private static final float HIND_LEG_Z = 7.0F;
+	private static final float TAIL_Y = 10.0F;
+	private static final float TAIL_Z = 8.5F;
 	private static final String REAL_HEAD = "real_head";
+	private static final String RIGHT_EAR = "right_ear";
+	private static final String LEFT_EAR = "left_ear";
 	private static final String REAL_TAIL = "real_tail";
 
 	private final ModelPart head;
@@ -53,26 +71,30 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		ModelData modelData = new ModelData();
 		ModelPartData root = modelData.getRoot();
 
-		ModelPartData head = root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create(), ModelTransform.origin(0.0F, 7.4F, -6.8F));
-		head.addChild(
+		ModelPartData head = root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create(), ModelTransform.origin(0.0F, HEAD_Y, HEAD_Z));
+		// A long, narrow wedge: the skull is three wide and five deep, and the
+		// muzzle carries on from it with barely any stop, as it does on the dog.
+		ModelPartData realHead = head.addChild(
 			REAL_HEAD,
 			ModelPartBuilder.create()
 				.uv(0, 0)
-				.cuboid(-2.0F, -2.0F, -3.0F, 4.0F, 4.0F, 4.0F, dilation)
+				.cuboid(-1.5F, -1.5F, -4.0F, 3.0F, 3.0F, 5.0F, dilation)
 				.uv(20, 0)
-				.cuboid(-1.5F, -0.5F, -6.0F, 3.0F, 2.0F, 3.0F, dilation)
-				.uv(36, 0)
-				.cuboid(-2.0F, -3.5F, -1.5F, 2.0F, 2.0F, 1.0F, dilation)
-				.uv(36, 0)
-				.mirrored()
-				.cuboid(0.0F, -3.5F, -1.5F, 2.0F, 2.0F, 1.0F, dilation),
+				.cuboid(-1.0F, -1.0F, -7.0F, 2.0F, 2.0F, 3.0F, dilation),
 			ModelTransform.NONE
 		);
 
+		// Rose ears: small flaps folded back along the skull with the tips turned
+		// out, not the upright triangles a wolf wears.
+		ModelPartBuilder ear = ModelPartBuilder.create().uv(36, 0).cuboid(-1.0F, -1.0F, 0.0F, 1.0F, 2.0F, 3.0F, dilation);
+		ModelPartBuilder mirroredEar = ModelPartBuilder.create().mirrored().uv(36, 0).cuboid(0.0F, -1.0F, 0.0F, 1.0F, 2.0F, 3.0F, dilation);
+		realHead.addChild(RIGHT_EAR, ear, ModelTransform.of(-1.4F, -0.3F, -0.5F, -0.15F, -0.4F, -0.3F));
+		realHead.addChild(LEFT_EAR, mirroredEar, ModelTransform.of(1.4F, -0.3F, -0.5F, -0.15F, 0.4F, 0.3F));
+
 		root.addChild(
 			EntityModelPartNames.NECK,
-			ModelPartBuilder.create().uv(32, 28).cuboid(-1.5F, -1.5F, -4.0F, 3.0F, 3.0F, 5.0F, dilation),
-			ModelTransform.of(0.0F, 9.8F, -3.5F, -0.6F, 0.0F, 0.0F)
+			ModelPartBuilder.create().uv(32, 28).cuboid(-1.5F, -1.5F, -6.0F, 3.0F, 3.0F, 7.0F, dilation),
+			ModelTransform.of(0.0F, NECK_Y, NECK_Z, -0.9F, 0.0F, 0.0F)
 		);
 
 		root.addChild(
@@ -81,24 +103,24 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 				.uv(0, 12)
 				.cuboid(-2.5F, -3.5F, -6.0F, 5.0F, 7.0F, 7.0F, dilation)
 				.uv(26, 12)
-				.cuboid(-2.0F, -3.5F, 1.0F, 4.0F, 4.0F, 6.0F, dilation),
-			ModelTransform.origin(0.0F, 11.5F, 0.0F)
+				.cuboid(-2.0F, -3.5F, 1.0F, 4.0F, 4.0F, 8.0F, dilation),
+			ModelTransform.origin(0.0F, BODY_Y, BODY_Z)
 		);
 
 		ModelPartBuilder leg = ModelPartBuilder.create().uv(0, 28).cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 9.0F, 2.0F, dilation);
 		ModelPartBuilder mirroredLeg = ModelPartBuilder.create().mirrored().uv(0, 28).cuboid(-1.0F, 0.0F, -1.0F, 2.0F, 9.0F, 2.0F, dilation);
-		ModelPartBuilder haunch = ModelPartBuilder.create().uv(10, 28).cuboid(-1.5F, -0.5F, -1.5F, 3.0F, 4.0F, 3.0F, dilation);
-		ModelPartBuilder mirroredHaunch = ModelPartBuilder.create().mirrored().uv(10, 28).cuboid(-1.5F, -0.5F, -1.5F, 3.0F, 4.0F, 3.0F, dilation);
+		ModelPartBuilder haunch = ModelPartBuilder.create().uv(10, 28).cuboid(-1.5F, -3.0F, -1.5F, 3.0F, 4.0F, 3.0F, dilation);
+		ModelPartBuilder mirroredHaunch = ModelPartBuilder.create().mirrored().uv(10, 28).cuboid(-1.5F, -3.0F, -1.5F, 3.0F, 4.0F, 3.0F, dilation);
 
-		root.addChild(EntityModelPartNames.RIGHT_FRONT_LEG, mirroredLeg, ModelTransform.origin(-1.6F, 15.0F, -4.5F));
-		root.addChild(EntityModelPartNames.LEFT_FRONT_LEG, leg, ModelTransform.origin(1.6F, 15.0F, -4.5F));
-		root.addChild(EntityModelPartNames.RIGHT_HIND_LEG, mirroredLeg, ModelTransform.origin(-1.7F, 15.0F, 5.0F))
+		root.addChild(EntityModelPartNames.RIGHT_FRONT_LEG, mirroredLeg, ModelTransform.origin(-1.6F, LEG_Y, FRONT_LEG_Z));
+		root.addChild(EntityModelPartNames.LEFT_FRONT_LEG, leg, ModelTransform.origin(1.6F, LEG_Y, FRONT_LEG_Z));
+		root.addChild(EntityModelPartNames.RIGHT_HIND_LEG, mirroredLeg, ModelTransform.origin(-1.7F, LEG_Y, HIND_LEG_Z))
 			.addChild("right_haunch", mirroredHaunch, ModelTransform.NONE);
-		root.addChild(EntityModelPartNames.LEFT_HIND_LEG, leg, ModelTransform.origin(1.7F, 15.0F, 5.0F))
+		root.addChild(EntityModelPartNames.LEFT_HIND_LEG, leg, ModelTransform.origin(1.7F, LEG_Y, HIND_LEG_Z))
 			.addChild("left_haunch", haunch, ModelTransform.NONE);
 
 		ModelPartData tail = root.addChild(
-			EntityModelPartNames.TAIL, ModelPartBuilder.create(), ModelTransform.of(0.0F, 10.0F, 6.5F, 1.0F, 0.0F, 0.0F)
+			EntityModelPartNames.TAIL, ModelPartBuilder.create(), ModelTransform.of(0.0F, TAIL_Y, TAIL_Z, 1.0F, 0.0F, 0.0F)
 		);
 		tail.addChild(REAL_TAIL, ModelPartBuilder.create().uv(26, 28).cuboid(-0.5F, 0.0F, -0.5F, 1.0F, 9.0F, 1.0F, dilation), ModelTransform.NONE);
 
@@ -122,7 +144,7 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 				this.trot(limbSwing, limbAmplitude);
 			}
 
-			this.neck.pitch = -0.6F + state.tuckProgress * 0.5F;
+			this.neck.pitch = -0.9F + state.tuckProgress * 0.6F;
 			// Low tail carriage, and it curls under the belly when the dog is cold.
 			this.tail.pitch = state.tailAngle - state.tuckProgress * 0.9F;
 			// The whip tail swings across the body rather than wagging up and down.
@@ -143,6 +165,17 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		}
 	}
 
+	/**
+	 * Puts a part where an adult whippet would carry it. A puppy is the same
+	 * model at half scale, so the distance from the part's home has to shrink
+	 * with it or the pose comes apart in the middle.
+	 */
+	private static void moveTo(ModelPart part, float homeY, float homeZ, float y, float z) {
+		ModelTransform home = part.getDefaultTransform();
+		part.originY = home.y() + (y - homeY) * part.yScale;
+		part.originZ = home.z() + (z - homeZ) * part.zScale;
+	}
+
 	/** An easy trot: diagonal pairs, low amplitude, almost no body movement. */
 	private void trot(float limbSwing, float limbAmplitude) {
 		float swing = MathHelper.cos(limbSwing * 0.7F) * 1.25F * limbAmplitude;
@@ -152,7 +185,7 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		this.rightHindLeg.pitch = offSwing;
 		this.leftHindLeg.pitch = swing;
 		this.body.pitch = 0.0F;
-		this.body.originY = 11.5F;
+		moveTo(this.body, BODY_Y, BODY_Z, BODY_Y, BODY_Z);
 	}
 
 	/**
@@ -168,7 +201,7 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		this.rightHindLeg.pitch = hind;
 		this.leftHindLeg.pitch = hind - 0.25F;
 		this.body.pitch = MathHelper.sin(phase) * 0.12F;
-		this.body.originY = 11.5F + MathHelper.cos(phase * 2.0F) * 0.6F;
+		moveTo(this.body, BODY_Y, BODY_Z, BODY_Y + MathHelper.cos(phase * 2.0F) * 0.6F, BODY_Z);
 	}
 
 	/**
@@ -178,36 +211,28 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 	private void curl() {
 		// Flat out, brisket on the floor.
 		this.body.pitch = 0.0F;
-		this.body.originY = 20.8F;
-		this.body.originZ = 0.5F;
+		moveTo(this.body, BODY_Y, BODY_Z, 20.8F, 0.5F);
 		// Neck down off the front of the chest so the chin lands on the ground.
 		this.neck.pitch = 0.9F;
 		this.neck.yaw = 0.25F;
-		this.neck.originY = 19.6F;
-		this.neck.originZ = -4.3F;
-		this.head.originY = 22.4F;
-		this.head.originZ = -7.2F;
+		moveTo(this.neck, NECK_Y, NECK_Z, 19.6F, -4.3F);
+		moveTo(this.head, HEAD_Y, HEAD_Z, 22.4F, -8.0F);
 		this.head.pitch = 0.25F;
 		this.head.yaw = 0.5F;
 		this.head.roll = 0.0F;
 		// Legs folded away under the body, out of sight where they belong.
 		this.rightFrontLeg.pitch = 1.6F;
 		this.leftFrontLeg.pitch = 1.6F;
-		this.rightFrontLeg.originY = 22.6F;
-		this.leftFrontLeg.originY = 22.6F;
-		this.rightFrontLeg.originZ = -3.5F;
-		this.leftFrontLeg.originZ = -3.5F;
+		moveTo(this.rightFrontLeg, LEG_Y, FRONT_LEG_Z, 22.6F, -3.5F);
+		moveTo(this.leftFrontLeg, LEG_Y, FRONT_LEG_Z, 22.6F, -3.5F);
 		this.rightHindLeg.pitch = (float)(Math.PI * 1.5);
 		this.leftHindLeg.pitch = (float)(Math.PI * 1.5);
-		this.rightHindLeg.originY = 22.6F;
-		this.leftHindLeg.originY = 22.6F;
-		this.rightHindLeg.originZ = 4.0F;
-		this.leftHindLeg.originZ = 4.0F;
+		moveTo(this.rightHindLeg, LEG_Y, HIND_LEG_Z, 22.6F, 6.0F);
+		moveTo(this.leftHindLeg, LEG_Y, HIND_LEG_Z, 22.6F, 6.0F);
 		// Tail round the outside, the way it always ends up.
 		this.tail.pitch = 1.6F;
 		this.tail.yaw = 1.3F;
-		this.tail.originY = 22.6F;
-		this.tail.originZ = 4.5F;
+		moveTo(this.tail, TAIL_Y, TAIL_Z, 22.6F, 6.5F);
 		this.realTail.roll = 0.0F;
 	}
 
@@ -216,26 +241,22 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 	 * behind. A sitting whippet is mostly elbows.
 	 */
 	private void sit() {
-		this.body.pitch = -0.55F;
-		this.body.originY = 16.5F;
-		this.body.originZ = 2.0F;
-		this.neck.pitch = -0.9F;
-		this.neck.originY = 10.5F;
-		this.neck.originZ = -4.0F;
-		this.head.originY = 6.8F;
-		this.head.originZ = -7.0F;
+		// The rump goes down on the ground, the back comes up at forty degrees,
+		// and the front legs stay straight underneath. Mostly elbows.
+		this.body.pitch = -0.7F;
+		moveTo(this.body, BODY_Y, BODY_Z, 17.8F, 2.0F);
+		this.neck.pitch = -1.2F;
+		moveTo(this.neck, NECK_Y, NECK_Z, 11.6F, -1.5F);
+		moveTo(this.head, HEAD_Y, HEAD_Z, 6.0F, -3.7F);
 		this.rightHindLeg.pitch = (float)(Math.PI * 1.5);
 		this.leftHindLeg.pitch = (float)(Math.PI * 1.5);
-		this.rightHindLeg.originY = 22.0F;
-		this.leftHindLeg.originY = 22.0F;
-		this.rightHindLeg.originZ = 4.0F;
-		this.leftHindLeg.originZ = 4.0F;
+		moveTo(this.rightHindLeg, LEG_Y, HIND_LEG_Z, 22.3F, 8.0F);
+		moveTo(this.leftHindLeg, LEG_Y, HIND_LEG_Z, 22.3F, 8.0F);
 		this.rightFrontLeg.pitch = 0.0F;
 		this.leftFrontLeg.pitch = 0.0F;
 		this.tail.pitch = 1.75F;
 		this.tail.yaw = 0.3F;
-		this.tail.originY = 21.0F;
-		this.tail.originZ = 5.5F;
+		moveTo(this.tail, TAIL_Y, TAIL_Z, 22.0F, 8.5F);
 		this.realTail.roll = 0.0F;
 	}
 }

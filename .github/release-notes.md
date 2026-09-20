@@ -1,9 +1,14 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
-**In 1.0.1:** the model's chest is deeper. A whippet's brisket comes down level
-with its elbow — half the height at the withers — and the model's was at 0.39,
-which made it read as a foal rather than a sighthound.
+**In 1.0.2:** the dog is rebuilt against photographs of a real whippet. The
+head is a long narrow wedge with almost no stop instead of a brick; the ears are
+rose ears, small flaps folded back along the skull, not a wolf's upright
+triangles; the neck is longer and carried higher; the back is longer, with the
+hindquarters set back under the arch and the thigh filling the gap over the
+tuck-up; and the sit has the rump on the ground with the front legs straight
+under it. Puppies are put back together too — the head sat off the end of the
+neck on the half-scale model, and the poses now shrink with them.
 
 ## Installing
 
@@ -11,7 +16,7 @@ which made it read as a foal rather than a sighthound.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.0.0.jar`** from the assets below in beside it.
+3. Put **`whippets-1.0.2.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.

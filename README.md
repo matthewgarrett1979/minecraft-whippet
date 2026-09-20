@@ -209,6 +209,13 @@ The `BOXES` table in that script mirrors the cuboids in
 `WhippetEntityModel.getModelData()`. If you move a box in the model, move it
 there too and re-run, or the coat will land on the wrong face.
 
+The shape itself is drawn from photographs of a real whippet rather than from
+the wolf it started as: a long narrow wedge of a head with barely any stop,
+rose ears folded back along the skull, a long neck carried high, a deep chest
+and a hard tuck-up, hindquarters set back under the arch, and a low whip tail.
+The proportions are held to life size — withers sixteen units, head seven,
+brisket level with the elbow — so a coat change never quietly deforms the dog.
+
 The banner is Bonnie herself, coarsened into the game's idiom:
 `tools/banner/Pixelate.java` downsamples her photograph to a 160-square grid
 and flattens the palette with k-means, and `tools/banner/Banner.java` sets the
