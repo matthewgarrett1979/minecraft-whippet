@@ -103,14 +103,14 @@ and on every client.
 
 ### Where to get the jar
 
-Either build it (below), or let CI do it: `.github/workflows/whippets.yml`
-builds the mod, boots a dedicated server with it to check the jar actually
-loads, and uploads the result.
+Either build it (below), or let CI do it: `.github/workflows/build.yml` builds
+the mod, boots a dedicated server with it to check the jar actually loads, and
+uploads the result.
 
-- **A release:** push a tag — `git tag whippets-v1.0.0 && git push origin
-  whippets-v1.0.0` — and the jar is attached to a GitHub release.
-- **A one-off build:** Actions → "Whippets mod" → Run workflow. The jar lands
-  on the run's summary page as an artifact.
+- **A release:** push a tag — `git tag v1.0.0 && git push origin v1.0.0` — and
+  the jar is attached to a GitHub release.
+- **A one-off build:** Actions → "Build" → Run workflow. The jar lands on the
+  run's summary page as an artifact.
 
 ## Building
 
@@ -127,6 +127,8 @@ JAVA_HOME=/path/to/jdk-25 ./gradlew runServer # dev server, world in run/
 ## Layout
 
 ```
+.github/workflows/build.yml    CI: build, boot a server with the jar, release on a tag
+tools/generate_textures.py     draws every PNG in the mod
 src/main/java/dev/whippet/whippets/
   Whippets.java          mod entrypoint
   ModEntities.java       entity type, spawn restrictions, default attributes
@@ -148,7 +150,6 @@ src/client/java/dev/whippet/whippets/client/
   WhippetEntityModel.java     the model, the trot / gallop / sit / curl poses, the head tilt
   WhippetEntityRenderer.java  renderer, render state and the collar layer
 src/main/resources/            fabric.mod.json, textures, lang, loot table, tag, recipe
-tools/generate_textures.py     draws every PNG in the mod
 ```
 
 ## Art
@@ -164,3 +165,8 @@ python3 tools/generate_textures.py
 The `BOXES` table in that script mirrors the cuboids in
 `WhippetEntityModel.getModelData()`. If you move a box in the model, move it
 there too and re-run, or the coat will land on the wrong face.
+
+## Licence
+
+All rights reserved — see `LICENSE`. If you would rather this were MIT, that is
+one line there and one in `fabric.mod.json`.

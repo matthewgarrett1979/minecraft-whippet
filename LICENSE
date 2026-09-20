@@ -1,0 +1,21 @@
+Whippets (Minecraft mod) — Proprietary License
+
+Copyright (c) 2026 Matthew Garrett. All rights reserved.
+
+This software and its source code ("the Software") are the proprietary
+property of the copyright holder. The Software is licensed, not sold.
+
+No part of the Software may be used, copied, modified, merged, published,
+distributed, sublicensed or reverse engineered except under a written
+agreement with the copyright holder.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING
+FROM THE USE OF THE SOFTWARE.
+
+The Software is built against Minecraft, Fabric Loader and Fabric API, which
+are distributed under their own terms by their own authors. Minecraft is a
+trademark of Mojang Synergies AB; this mod is not affiliated with or endorsed
+by Mojang or Microsoft.

@@ -8,10 +8,10 @@
 		"Tech Remote Pro"
 	],
 	"contact": {
-		"homepage": "https://github.com/matthewgarrett1979/Remote-control-",
-		"sources": "https://github.com/matthewgarrett1979/Remote-control-"
+		"homepage": "https://github.com/matthewgarrett1979/whippets",
+		"sources": "https://github.com/matthewgarrett1979/whippets"
 	},
-	"license": "MIT",
+	"license": "ARR",
 	"icon": "assets/whippets/icon.png",
 	"environment": "*",
 	"entrypoints": {
