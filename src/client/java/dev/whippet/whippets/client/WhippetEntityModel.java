@@ -138,17 +138,21 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		} else if (state.inSittingPose) {
 			this.sit();
 		} else {
-			if (state.zooming) {
+			float hurry = 0.0F;
+
+			if (state.zooming || state.racing) {
 				this.gallop(limbSwing);
 			} else {
-				this.trot(limbSwing, limbAmplitude);
+				hurry = this.trot(limbSwing, limbAmplitude, state.pace, state.groundSpeed);
 			}
 
 			this.neck.pitch = -0.9F + state.tuckProgress * 0.6F;
 			// Low tail carriage, and it curls under the belly when the dog is cold.
-			this.tail.pitch = state.tailAngle - state.tuckProgress * 0.9F;
-			// The whip tail swings across the body rather than wagging up and down.
-			this.tail.yaw = MathHelper.cos(limbSwing * 0.55F) * 1.1F * limbAmplitude;
+			// It comes up off the hocks and streams out as the dog quickens.
+			this.tail.pitch = state.tailAngle - state.tuckProgress * 0.9F - hurry * 0.3F;
+			// The whip tail swings across the body rather than wagging up and down,
+			// and the swing shortens and quickens with the stride.
+			this.tail.yaw = MathHelper.cos(limbSwing * (0.55F + hurry * 0.5F)) * (1.1F - hurry * 0.35F) * limbAmplitude;
 			this.realTail.roll = MathHelper.sin(limbSwing * 0.3F) * 0.15F;
 		}
 
@@ -176,16 +180,49 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		part.originZ = home.z() + (z - homeZ) * part.zScale;
 	}
 
-	/** An easy trot: diagonal pairs, low amplitude, almost no body movement. */
-	private void trot(float limbSwing, float limbAmplitude) {
-		float swing = MathHelper.cos(limbSwing * 0.7F) * 1.25F * limbAmplitude;
-		float offSwing = MathHelper.cos(limbSwing * 0.7F + (float)Math.PI) * 1.25F * limbAmplitude;
+	/**
+	 * The trot, at whatever pace the dog is going. Dawdling, it is the easy
+	 * diagonal walk it always was: long strides, almost no movement above the
+	 * elbow. Pushed on, it tightens into the quick trot — a much higher
+	 * cadence, shorter strides, the feet snapping through and holding at the
+	 * ends rather than sweeping, and the whole body rocking from side to side
+	 * and bouncing on each diagonal. It is the armadillo's busy scuttle done on
+	 * a sighthound's legs, and it is how a whippet actually covers ground when
+	 * it has not yet decided to gallop.
+	 */
+	private float trot(float limbSwing, float limbAmplitude, float pace, float groundSpeed) {
+		// How much of the quick trot is showing, measured on ground actually
+		// covered: nothing at a dawdle, half of it at a wander, all of it once
+		// the dog is going somewhere.
+		float hurry = MathHelper.clamp((groundSpeed - 0.17F) / 0.14F, 0.0F, 1.0F);
+		float cadence = MathHelper.lerp(hurry, 0.7F, 1.5F) * pace;
+		float reach = MathHelper.lerp(hurry, 1.25F, 0.85F) * limbAmplitude;
+		float phase = limbSwing * cadence;
+		float swing = snap(MathHelper.cos(phase), hurry) * reach;
+		float offSwing = snap(MathHelper.cos(phase + (float)Math.PI), hurry) * reach;
 		this.rightFrontLeg.pitch = swing;
 		this.leftFrontLeg.pitch = offSwing;
 		this.rightHindLeg.pitch = offSwing;
 		this.leftHindLeg.pitch = swing;
 		this.body.pitch = 0.0F;
-		moveTo(this.body, BODY_Y, BODY_Z, BODY_Y, BODY_Z);
+		// Rock and bounce: the torso rolls with the diagonals and lifts on each
+		// beat, while the neck and head ride above it and stay level.
+		this.body.roll = MathHelper.sin(phase) * 0.09F * hurry;
+		moveTo(this.body, BODY_Y, BODY_Z, BODY_Y - Math.abs(MathHelper.cos(phase)) * 0.55F * hurry, BODY_Z);
+		float lift = Math.abs(MathHelper.cos(phase)) * 0.35F * hurry;
+		moveTo(this.head, HEAD_Y, HEAD_Z, HEAD_Y - lift, HEAD_Z);
+		moveTo(this.neck, NECK_Y, NECK_Z, NECK_Y - lift, NECK_Z);
+		return hurry;
+	}
+
+	/**
+	 * Flattens the ends of a wave and steepens the crossing, so a leg hangs at
+	 * the end of its stride and then snaps through instead of sweeping evenly.
+	 * At zero this is an ordinary sine; at one it is a quick, busy step.
+	 */
+	private static float snap(float wave, float amount) {
+		float sharpened = Math.signum(wave) * (float)Math.pow(Math.abs(wave), 0.55);
+		return MathHelper.lerp(amount, wave, sharpened);
 	}
 
 	/**

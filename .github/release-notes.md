@@ -1,6 +1,17 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.2.0: the quick trot.** A whippet dawdling still uses the long easy
+diagonal trot it always had. Pushed on — chasing a squirrel, coming when it is
+called — it now shifts up into a quick trot: the cadence roughly doubles, the
+stride shortens, the feet snap through and hold at the ends instead of
+sweeping, and the body rocks from side to side and bounces on each diagonal. It
+is an armadillo's busy scuttle on a sighthound's legs, and it is what a whippet
+actually looks like covering ground. Which gait you see follows the ground the
+dog covers each tick, so it shifts as the dog does, and a dog with a better
+pace picks its feet up quicker. Racing whippets now gallop rather than trot,
+which they should have been doing all along.
+
 **In 1.1.0: squirrels.** Red, grey and a rare black one, in forest and taiga.
 They sit up on their haunches with both paws at their mouth, steal any seeds or
 berries you drop and bury them six blocks away, and will take food out of your
@@ -34,7 +45,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.1.0.jar`** from the assets below in beside it.
+3. Put **`whippets-1.2.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.

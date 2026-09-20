@@ -64,6 +64,15 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
 
 - **Fast.** Movement speed 0.38 against a wolf's 0.3, and it can clear a fence:
   higher jump strength and a longer safe fall distance than other animals.
+- **Three gaits.** Dawdling, it uses the long easy diagonal trot. Pushed on —
+  chasing something, coming when it is called — that tightens into the quick
+  trot: the cadence roughly doubles, the stride shortens, the feet snap through
+  and hold at the ends instead of sweeping, and the whole body rocks from side
+  to side and bounces on each diagonal, which is the armadillo's busy scuttle
+  done on a sighthound's legs. Zoomies and races get the double-suspension
+  gallop. Which one you see is decided by the ground it actually covers each
+  tick, so it shifts up and down as the dog does, and a dog with a better pace
+  picks its feet up a little quicker.
 - **Zoomies.** Every minute or three a whippet explodes into three or four laps
   at roughly twice its normal speed — wide arcs around its owner if it has one —
   kicking up dust as it goes, then flops down where it stopped and refuses to

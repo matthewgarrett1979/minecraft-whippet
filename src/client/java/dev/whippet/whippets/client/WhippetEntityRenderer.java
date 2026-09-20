@@ -59,6 +59,14 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 		state.texture = isNamedBonnie(whippet) ? WhippetCoat.BONNIE.getTexture() : whippet.getTextureId();
 		state.inSittingPose = whippet.isInSittingPose();
 		state.zooming = whippet.isZooming();
+		state.racing = whippet.isRacing();
+		state.pace = whippet.getPace();
+		// How much ground it actually covered last tick. The vanilla limb
+		// amplitude saturates at a walk, so it cannot tell a dawdle from a
+		// chase; this can.
+		double dx = whippet.getX() - whippet.lastX;
+		double dz = whippet.getZ() - whippet.lastZ;
+		state.groundSpeed = Math.min((float)Math.sqrt(dx * dx + dz * dz), 0.6F);
 		state.curled = whippet.isCurled();
 		state.begProgress = whippet.getBegProgress(tickProgress);
 		state.burrowed = whippet.isBurrowed();
