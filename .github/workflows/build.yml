@@ -76,4 +76,4 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" build/libs/whippets-*.jar \
             --title "Whippets $GITHUB_REF_NAME" \
-            --notes "Fabric mod for Minecraft 1.21.11. Needs Fabric Loader 0.19.5+ and Fabric API, and Java 21 to play. Drop the jar into your mods folder."
+            --notes-file .github/release-notes.md

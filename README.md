@@ -1,3 +1,5 @@
+![Whippets — tameable sighthounds for Minecraft](docs/banner.png)
+
 # Whippets
 
 A Fabric mod that adds whippets to Minecraft: tameable sighthounds that are
@@ -12,6 +14,45 @@ periodically detonate into the zoomies.
 | Loader | Fabric Loader 0.19.5+ |
 | Requires | Fabric API 0.141.6+ |
 | Java (to play) | 21 |
+
+## Getting started
+
+1. Find one. Whippets turn up in ones and twos in plains, sunflower plains,
+   meadows and savanna. A wild one is busy chasing rabbits and will not care
+   about you.
+2. Tame it. Hold rabbit, chicken, mutton or beef — raw or cooked — and feed it.
+   Like a wolf it takes about three goes. Hearts mean yes, smoke means try
+   again.
+3. Now you have a dog. It follows you, sits and stands on right-click, heals
+   when fed, takes a collar from any dye, and breeds with the same foods.
+4. Stand still for a couple of seconds and it will come and curl up against
+   you. Hold food and it will tilt its head at you and whine until you give in.
+5. Wait. Sooner or later it will explode into the zoomies, run several laps
+   round you at twice its normal speed, and then flop over.
+
+### Racing them
+
+Craft a **whippet lure** from a stick, string and white wool.
+
+1. Right-click a block with the lure to peg it. That spot is the finish.
+2. Walk back up the track to where you want the start — anything up to 128
+   blocks — and right-click in the air.
+3. Every tamed whippet of yours within 24 blocks is called to the line. They
+   teleport into lanes abreast facing the lure and are held through a
+   three-count; they cannot creep forward before the bell.
+4. On the bell they run flat out. The first to reach the lure wins, takes a lap
+   of honour, and everyone near the finish gets the result and the times.
+
+Each dog has its own form — a pace rolled when it was born, worth about ten per
+cent either way and passed on to its pups — and its own reaction out of the
+traps. Over a short track the break decides it; over a long one the better dog
+tells. You find out which of yours is quick by racing them.
+
+### Calling them back
+
+Craft a **whippet whistle** from two iron nuggets and a bone. Blowing it stands
+up every whippet you own within 48 blocks, cancels whatever it was doing —
+racing, zoomies, hiding under a duvet — and recalls the distant ones to you.
 
 ## What it adds
 
@@ -62,6 +103,8 @@ anywhere near one of yours and it will come over, press itself against you and
 curl up, with the odd heart to say so, and it stays there until you move. While
 it is curled against you it thaws you out: your freezing ticks come off four
 times as fast, so a whippet on your lap is powder-snow insurance.
+
+![A whippet buried in a bed with one paw showing](docs/in-bed.png)
 
 **Under the covers** — at night, in rain or snow, or in a cold biome, a whippet
 goes looking for bedding: a bed within ten blocks, or failing that any wool or
@@ -154,8 +197,8 @@ src/main/resources/            fabric.mod.json, textures, lang, loot table, tag,
 
 ## Art
 
-There are no hand-drawn assets. `tools/generate_textures.py` writes all five
-coat sheets, the collar overlay, both item icons and the mod icon from a palette
+There are no hand-drawn assets. `tools/generate_textures.py` writes all six coat
+sheets, the collar overlay, the three item icons and the mod icon from a palette
 and a table of cuboid UVs, using nothing but the Python standard library:
 
 ```sh
@@ -165,6 +208,13 @@ python3 tools/generate_textures.py
 The `BOXES` table in that script mirrors the cuboids in
 `WhippetEntityModel.getModelData()`. If you move a box in the model, move it
 there too and re-run, or the coat will land on the wrong face.
+
+The banner is made the same way rather than drawn: `tools/banner/cutout.py`
+keys the grass and sky out of an in-game screenshot to get
+`tools/banner/whippet.png`, and `tools/banner/Banner.java` composites that over
+a background with the title. The dog on the banner is the actual mob, scaled
+with nearest-neighbour so the pixels stay square — that way the banner cannot
+promise anything the mod does not deliver.
 
 ## Licence
 
