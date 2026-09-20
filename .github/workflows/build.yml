@@ -1,0 +1,66 @@
+# Builds the mod and publishes a jar.
+#
+# Where to get a jar:
+#   - push a tag like v1.0.0 -> builds and attaches the jar to a release
+#   - Actions -> "Build" -> Run workflow -> builds and uploads an artifact
+#   - open a PR touching the mod -> same artifact, on the run's summary page
+#
+# Note: push triggers here are tags only. GitHub ANDs ref filters with path
+# filters, so a workflow filtered on paths will not run for a tag push at all.
+name: Build
+
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      # Loom 1.18 needs a JDK 25 to run, even though the mod targets Java 21.
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "25", cache: gradle }
+      - run: chmod +x gradlew
+      - run: ./gradlew build --no-daemon
+
+      # The mod ships no unit tests: the check that matters is whether the
+      # remapped jar loads on a stock server next to Fabric API, so boot one.
+      # Only the log is asserted on — commands piped to a server's stdin are not
+      # reliable enough to gate a build on.
+      - name: Boot a dedicated server with the jar installed
+        run: |
+          set -euo pipefail
+          mkdir -p smoke/mods && cd smoke
+          curl -sSL --retry 3 -o server.jar \
+            "https://meta.fabricmc.net/v2/versions/loader/1.21.11/0.19.5/1.1.0/server/jar"
+          curl -sSL --retry 3 -o mods/fabric-api.jar \
+            "https://cdn.modrinth.com/data/P7dR8mSH/versions/6qAuTtLR/fabric-api-0.141.6%2B1.21.11.jar"
+          cp ../build/libs/whippets-*.jar mods/
+          echo "eula=true" > eula.txt
+          # Port 0 keeps the boot from colliding with anything else on the runner.
+          printf 'level-type=minecraft\\:flat\nmax-tick-time=-1\nserver-port=0\nonline-mode=false\n' > server.properties
+          timeout 300 java -Xmx2G -jar server.jar nogui <<< "stop" | tee boot.log
+          grep -q "whippets 1" boot.log
+          grep -qE "Done \(" boot.log
+          if grep -qE "Mod resolution failed|Failed to load|Incompatible mod set" boot.log; then
+            echo "::error::the mod did not load cleanly"; exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: whippets-mod
+          path: build/libs/*.jar
+
+      - name: Attach the jar to a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/libs/whippets-*.jar \
+            --title "Whippets $GITHUB_REF_NAME" \
+            --notes "Fabric mod for Minecraft 1.21.11. Needs Fabric Loader 0.19.5+ and Fabric API, and Java 21 to play. Drop the jar into your mods folder."

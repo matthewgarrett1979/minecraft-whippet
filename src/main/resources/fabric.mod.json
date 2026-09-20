@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "whippets",
+	"version": "${version}",
+	"name": "Whippets",
+	"description": "Adds whippets: fast, affectionate, slightly ridiculous sighthounds you can tame, breed and race. Five coat colours, real zoomies, and a nose for rabbits.",
+	"authors": [
+		"Tech Remote Pro"
+	],
+	"contact": {
+		"homepage": "https://github.com/matthewgarrett1979/minecraft-whippet",
+		"sources": "https://github.com/matthewgarrett1979/minecraft-whippet"
+	},
+	"license": "ARR",
+	"icon": "assets/whippets/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"dev.whippet.whippets.Whippets"
+		],
+		"client": [
+			"dev.whippet.whippets.client.WhippetsClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

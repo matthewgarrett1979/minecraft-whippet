@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:item/generated",
+	"textures": {
+		"layer0": "whippets:item/whippet_spawn_egg"
+	}
+}
