@@ -1,6 +1,24 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.6.0: turbo.** A whippet has one thing nothing else in the overworld can
+answer, and now it uses it: given a reason it drops into the gallop and goes at
+thirteen blocks a second — twice a sprinting player, a shade over the fastest
+horse, and two and a half times what the same dog does at its ordinary chasing
+pace. It winds up rather than arriving at speed, throws the ground up behind it,
+runs flat with its ears pinned back, and at full stretch it stops following the
+path it was given and runs straight at the thing, which is what a sighthound is
+for.
+
+What it has not got is any depth: about six seconds, and a dog that empties the
+tank is blown — head down, tail down, panting, slower than its own walking pace
+until it gets its breath back. It goes on its own after quarry that has to be
+run down, and when you break into a sprint, which a whippet cannot ignore. You
+can also ask: **crouch and right-click your whippet with an empty hand** to slip
+it, or **crouch and blow the whistle** to slip the whole pack. Racing changed to
+suit: they cruise off the bell and each dog picks its own point to make its run,
+so going too early now means coming home blown with the field going past.
+
 **In 1.5.0: that is a real whippet.** The honk is no longer synthesised. It is
 Bonnie — the whippet this mod was drawn from — recorded on a phone by her owner
 and cut into four takes, one of them a double with her own gap between the two
@@ -72,7 +90,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.5.0.jar`** from the assets below in beside it.
+3. Put **`whippets-1.6.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
@@ -96,9 +114,14 @@ fed and takes a collar from any dye.
 double speed, thrown in wide arcs around you, kicking up dust — then it flops
 over where it stopped and refuses to move for a few seconds.
 
+**Turbo.** Thirteen blocks a second for six seconds, and then the dog is blown.
+It goes after quarry and when you sprint; crouch and right-click one, or crouch
+and blow the whistle, and it goes because you said so.
+
 **Racing.** Craft a lure (stick, string, white wool). Peg it on a block to set
 the finish, then right-click in the air to call your whippets to the line. They
-line up abreast, are held through a three-count, and run flat out on the bell.
+line up abreast, are held through a three-count, and cruise off the bell, each
+dog going flat out at its own point in the run.
 First to the lure wins and takes a lap of honour; everyone near the finish gets
 the times. Each dog has its own pace and its own reaction out of the traps, so
 over a short track the break decides it and over a long one the better dog

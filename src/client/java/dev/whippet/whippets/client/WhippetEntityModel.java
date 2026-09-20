@@ -44,6 +44,8 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 
 	private final ModelPart head;
 	private final ModelPart realHead;
+	private final ModelPart rightEar;
+	private final ModelPart leftEar;
 	private final ModelPart neck;
 	private final ModelPart body;
 	private final ModelPart rightFrontLeg;
@@ -57,6 +59,8 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		super(root);
 		this.head = root.getChild(EntityModelPartNames.HEAD);
 		this.realHead = this.head.getChild(REAL_HEAD);
+		this.rightEar = this.realHead.getChild(RIGHT_EAR);
+		this.leftEar = this.realHead.getChild(LEFT_EAR);
 		this.neck = root.getChild(EntityModelPartNames.NECK);
 		this.body = root.getChild(EntityModelPartNames.BODY);
 		this.rightFrontLeg = root.getChild(EntityModelPartNames.RIGHT_FRONT_LEG);
@@ -140,8 +144,8 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		} else {
 			float hurry = 0.0F;
 
-			if (state.zooming || state.racing) {
-				this.gallop(limbSwing);
+			if (state.zooming || state.racing || state.turboProgress > 0.001F) {
+				this.gallop(limbSwing, state.turboProgress);
 			} else {
 				hurry = this.trot(limbSwing, limbAmplitude, state.pace, state.groundSpeed);
 			}
@@ -159,6 +163,17 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		if (!state.curled) {
 			this.head.pitch = this.head.pitch + state.pitch * (float)(Math.PI / 180.0) + state.tuckProgress * 0.25F;
 			this.head.yaw = state.relativeHeadYaw * (float)(Math.PI / 180.0);
+		}
+
+		if (!state.curled && !state.inSittingPose && state.turboProgress > 0.001F) {
+			this.flatOut(state.turboProgress);
+		}
+
+		// Blown: head down, neck down, and no interest in anything.
+		if (state.blown && !state.curled && !state.inSittingPose) {
+			this.neck.pitch += 0.2F;
+			moveTo(this.head, HEAD_Y, HEAD_Z, HEAD_Y + 1.1F, HEAD_Z);
+			this.head.pitch += 0.15F;
 		}
 
 		// The snoot: the neck drops, the nose goes out and slightly down, and
@@ -238,17 +253,48 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 	/**
 	 * A double-suspension gallop: front pair and hind pair swing together and the
 	 * whole dog folds and extends. This is the gait whippets are famous for.
+	 *
+	 * <p>Flat out it is the same gait wound right up — a longer reach on every
+	 * leg, a quicker beat, a deeper fold through the back and the whole dog
+	 * carried lower to the ground.
+	 *
+	 * @param turbo how much of the flat-out gallop is showing, 0 to 1
 	 */
-	private void gallop(float limbSwing) {
-		float phase = limbSwing * 0.55F;
-		float front = MathHelper.cos(phase) * 1.9F;
-		float hind = MathHelper.cos(phase + 2.2F) * 1.9F;
+	private void gallop(float limbSwing, float turbo) {
+		float phase = limbSwing * (0.55F + turbo * 0.13F);
+		float reach = 1.9F + turbo * 0.55F;
+		float front = MathHelper.cos(phase) * reach;
+		float hind = MathHelper.cos(phase + 2.2F) * reach;
 		this.rightFrontLeg.pitch = front;
 		this.leftFrontLeg.pitch = front - 0.25F;
 		this.rightHindLeg.pitch = hind;
 		this.leftHindLeg.pitch = hind - 0.25F;
-		this.body.pitch = MathHelper.sin(phase) * 0.12F;
-		moveTo(this.body, BODY_Y, BODY_Z, BODY_Y + MathHelper.cos(phase * 2.0F) * 0.6F, BODY_Z);
+		this.body.pitch = MathHelper.sin(phase) * (0.12F + turbo * 0.11F);
+		moveTo(
+			this.body,
+			BODY_Y,
+			BODY_Z,
+			BODY_Y + MathHelper.cos(phase * 2.0F) * (0.6F + turbo * 0.5F) + turbo * 0.5F,
+			BODY_Z
+		);
+	}
+
+	/**
+	 * Full stretch. The head and neck come down into the line of the back, the
+	 * ears fold flat against the skull and the tail goes out straight behind:
+	 * at speed there is nothing standing up on a whippet anywhere.
+	 */
+	private void flatOut(float turbo) {
+		this.neck.pitch += turbo * 0.55F;
+		moveTo(this.neck, NECK_Y, NECK_Z, NECK_Y + turbo * 0.7F, NECK_Z - turbo * 0.5F);
+		moveTo(this.head, HEAD_Y, HEAD_Z, HEAD_Y + turbo * 2.2F, HEAD_Z - turbo * 1.4F);
+		this.head.pitch += turbo * 0.2F;
+		// Nothing is being looked at but the ground going past.
+		this.head.yaw *= 1.0F - turbo * 0.6F;
+		this.rightEar.yaw -= turbo * 0.45F;
+		this.rightEar.roll -= turbo * 0.35F;
+		this.leftEar.yaw += turbo * 0.45F;
+		this.leftEar.roll += turbo * 0.35F;
 	}
 
 	/**

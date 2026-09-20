@@ -63,7 +63,8 @@ one parent or the other when two whippets breed (with a one-in-ten throwback to
 a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
 
 - **Fast.** Movement speed 0.38 against a wolf's 0.3, and it can clear a fence:
-  higher jump strength and a longer safe fall distance than other animals.
+  higher jump strength and a longer safe fall distance than other animals. And
+  then there is turbo, which is below.
 - **Three gaits.** Dawdling, it uses the long easy diagonal trot. Pushed on —
   chasing something, coming when it is called — that tightens into the quick
   trot: the cadence roughly doubles, the stride shortens, the feet snap through
@@ -103,6 +104,34 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
   goose honk that was synthesised in her place first. Each dog honks on its own
   note, derived from its pace, and puppies honk higher. See
   [docs/sound.md](docs/sound.md).
+
+![A fawn whippet at full stretch, airborne, clods of turf flying behind it, a squirrel on the horizon ahead of it](docs/turbo.png)
+
+**Flat out** — a whippet has one trick nothing else in the overworld can answer,
+and this is it. Given a reason, it drops into the gallop and goes at thirteen
+blocks a second: twice a sprinting player, a shade over the fastest horse, and
+two and a half times what the same dog does chasing something at its ordinary
+pace. It winds up over about half a second rather than arriving at speed, it
+throws the ground up behind it, and at full stretch it runs by sight — straight
+at the thing, rather than round the corners of a path, which is what a
+sighthound is for.
+
+What it has not got is any depth. There is about six seconds of that in a
+whippet, and a dog that empties the tank is **blown**: head down, tail down,
+panting, and slower than its own walking pace until it has most of its breath
+back. It goes flat out on its own when there is a reason — quarry more than six
+blocks off that has to be run down, or you breaking into a sprint, which a
+whippet is physically unable to ignore — and you can also just ask:
+
+- **Crouch and right-click your own whippet with an empty hand** and it is
+  *slipped*, which is the racing word for letting one go. If it has nothing in
+  particular to chase it invents something and runs a lap of the field.
+- **Crouch and blow the whistle** and the whole pack is slipped at once. Blowing
+  it standing up still recalls them, as it always did.
+
+A slip is five seconds, which will not empty a full tank, so asking a dog to run
+does not wreck it — a long chase will. Puppies have a third of the tank and no
+judgement at all about spending it.
 
 ![Two whippets nose to nose in a walled pen, greeting each other](docs/greeting.png)
 
@@ -151,9 +180,16 @@ block with it to peg the lure: that spot is the finish. Then stand where you
 want the start and right-click in the air. Every tamed whippet of yours within
 24 blocks is called to the line, teleported into lanes abreast facing the lure,
 and held there through a three-count — they cannot creep forward before the
-bell. On the bell they are released and run flat out at the lure; the first to
-reach it wins and takes its lap of honour, and everyone near the finish gets the
-result and the times.
+bell. On the bell they are released and settle into a strong cruise, and then
+each dog picks its own point to make its run and goes flat out for the line. The
+first to reach the lure wins and takes its lap of honour, and everyone near the
+finish gets the result and the times.
+
+Where a dog makes its run is rolled per race, anywhere from a quarter to three
+quarters of the way out, and there is only six seconds of flat out in any of
+them — so a dog that goes early can lead a long way and still come home blown
+with the field going past it. Over sixty blocks a middling race looks like four
+seconds of cruising and two and a half of sprint.
 
 Every whippet has its own **form**: a pace rolled when it is born, worth about
 ten per cent either way, passed to its pups with a little drift. It also breaks
@@ -266,7 +302,7 @@ src/main/java/dev/whippet/whippets/
   item/WhippetWhistleItem.java
   item/WhippetLureItem.java
 src/client/java/dev/whippet/whippets/client/
-  WhippetEntityModel.java     the model, the trot / gallop / sit / curl poses, the head tilt
+  WhippetEntityModel.java     the model, the trot / gallop / flat-out / sit / curl poses, the head tilt
   SquirrelEntityModel.java    the squirrel, its tail, and the bound / sit-up / climb poses
   WhippetEntityRenderer.java  renderer, render state and the collar layer
 src/main/resources/            fabric.mod.json, textures, lang, loot table, tag, recipe
@@ -292,6 +328,19 @@ rose ears folded back along the skull, a long neck carried high, a deep chest
 and a hard tuck-up, hindquarters set back under the arch, and a low whip tail.
 The proportions are held to life size — withers sixteen units, head seven,
 brisket level with the elbow — so a coat change never quietly deforms the dog.
+
+The speeds are measured rather than guessed. A whippet chasing something at its
+ordinary pace covers 0.27 blocks a tick; flat out it holds 0.65, which is 13
+blocks a second. Getting there took finding out how the game actually moves an
+animal: the move control turns its speed figure into an acceleration of (speed ×
+the movement attribute) squared, which the ground's drag then settles into a
+terminal speed — so `WhippetEntity` derives the figure it hands the control from
+the speed it wants, and clamps the velocity as well for ice and soul sand. The
+same measurements said the pathfinder was the real limit: a dog at this speed
+overruns every corner of a block path and arrives having zig-zagged, covering
+less ground than a slower one. Hence running by sight, in `mobTick`, which
+overrides the path with a straight line at the quarry whenever the next stride
+and a half is clear, and hands the steering back the moment it is not.
 
 The honk is the exception to all of this: it is a recording of Bonnie, not
 generated at all. How it was cleaned and cut is in [docs/sound.md](docs/sound.md).

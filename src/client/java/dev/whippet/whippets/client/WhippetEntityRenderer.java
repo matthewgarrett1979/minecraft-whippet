@@ -66,7 +66,9 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 		// chase; this can.
 		double dx = whippet.getX() - whippet.lastX;
 		double dz = whippet.getZ() - whippet.lastZ;
-		state.groundSpeed = Math.min((float)Math.sqrt(dx * dx + dz * dz), 0.6F);
+		state.groundSpeed = Math.min((float)Math.sqrt(dx * dx + dz * dz), 1.2F);
+		state.turboProgress = whippet.getTurboProgress(tickProgress);
+		state.blown = whippet.isBlown();
 		state.curled = whippet.isCurled();
 		state.begProgress = whippet.getBegProgress(tickProgress);
 		state.snootProgress = whippet.getSnootProgress(tickProgress);

@@ -35,6 +35,7 @@ import net.minecraft.entity.ai.goal.TemptGoal;
 import net.minecraft.entity.ai.goal.TrackOwnerAttackerGoal;
 import net.minecraft.entity.ai.goal.UntamedActiveTargetGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
@@ -55,6 +56,7 @@ import net.minecraft.item.DyeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
@@ -88,11 +90,81 @@ public class WhippetEntity extends TameableEntity {
 	private static final TrackedData<Boolean> BURROWED = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> BEGGING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> SNOOTING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	private static final TrackedData<Boolean> TURBO = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
 	public static final Identifier ZOOMIES_SPEED_MODIFIER_ID = Whippets.id("zoomies");
 	private static final EntityAttributeModifier ZOOMIES_SPEED_MODIFIER = new EntityAttributeModifier(
 		ZOOMIES_SPEED_MODIFIER_ID, 0.65, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
 	);
+
+	/**
+	 * Turbo. The modifier is rebuilt in steps as the dog winds up, because a
+	 * whippet does not arrive at top speed, it accelerates into it.
+	 */
+	public static final Identifier TURBO_SPEED_MODIFIER_ID = Whippets.id("turbo");
+	public static final Identifier BLOWN_SPEED_MODIFIER_ID = Whippets.id("blown");
+	/** What a blown dog is reduced to until it gets its breath back. */
+	private static final EntityAttributeModifier BLOWN_SPEED_MODIFIER = new EntityAttributeModifier(
+		BLOWN_SPEED_MODIFIER_ID, -0.3, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+	);
+	/** Flat out, on top of everything else: what gets the dog up to speed. */
+	private static final double TURBO_BOOST = 0.45;
+	/**
+	 * Top speed, in blocks a tick, and the reason there is a number here at all:
+	 * left to the attribute and the game's own friction a dog at full stretch
+	 * settles at nearly thirty blocks a second, which is not a whippet, it is a
+	 * bullet. Thirteen blocks a second is a bit over twice a sprinting player,
+	 * which is the ratio between a whippet and a person in life, and a shade
+	 * over the fastest horse — so a whippet is the quickest thing on four legs
+	 * in the overworld, for six seconds at a time and no longer.
+	 */
+	private static final double TOP_SPEED = 0.65;
+	/** What it is doing before the turbo comes in, so the wind-up has somewhere to start. */
+	private static final double CRUISING_SPEED = 0.3;
+	/**
+	 * What the ground takes back off a running animal each tick, measured rather
+	 * than looked up: a dog accelerating at a per tick settles at a/DRAG.
+	 */
+	private static final double GROUND_DRAG = 0.454;
+	/** How many steps the wind-up is applied in. */
+	private static final int TURBO_STEPS = 8;
+	/**
+	 * Ticks of flat-out running in a whippet. Six seconds, which sounds mean
+	 * until you remember that a real one covers a hundred and fifty metres in
+	 * that and then wants to lie down.
+	 */
+	private static final int LUNGS = 120;
+	/** Puppies have a fraction of the tank and absolutely no judgement about it. */
+	private static final int PUPPY_LUNGS = 50;
+	/**
+	 * Breath a blown dog has to get back before it will go again: three quarters
+	 * of the tank, not a mouthful. A dog that goes again on the first breath it
+	 * gets back just blows again three seconds later, which is neither a dog nor
+	 * a feature.
+	 */
+	private static final int RECOVERED = 90;
+	/** One tick of breath back per this many spent not running flat out. */
+	private static final int RECOVERY_RATE = 3;
+	/** A slip is a licence to run: this long, or until the tank is empty. */
+	private static final int SLIP_TICKS = 100;
+	/** Beyond this the dog has to run something down rather than trot after it. */
+	private static final double WORTH_RUNNING_FOR = 6.0;
+	/**
+	 * How often a dog at full stretch is given a fresh line to run on. The goals
+	 * repath on their own schedule, which is built for animals that walk: a
+	 * turbo whippet arrives where the path ended and stands there waiting for
+	 * the next one, so it gets its own.
+	 */
+	private static final int TURBO_REPATH_INTERVAL = 4;
+	private static final double TURBO_NAV_SPEED = 1.45;
+	/** How wound up a dog has to be before it stops reading the path and just goes. */
+	private static final float RUNS_BY_SIGHT_AT = 0.45F;
+	/** Inside this it is close enough to stop steering and start biting. */
+	private static final double CLOSE_ENOUGH = 2.0;
+	/** How far ahead it looks for something it would rather not hit. */
+	private static final double LOOKS_AHEAD = 1.6;
+	/** How far off you can be, sprinting, and still have the dog come with you. */
+	private static final double KEEPS_UP_WITHIN = 24.0;
 
 	private static final float WILD_MAX_HEALTH = 14.0F;
 	private static final float TAMED_MAX_HEALTH = 24.0F;
@@ -154,6 +226,15 @@ public class WhippetEntity extends TameableEntity {
 	private boolean settledSigh;
 	/** This dog's form: a lasting edge or handicap over a racing distance. */
 	private float pace = 1.0F;
+	/** Ticks of flat-out running left in this dog. */
+	private int breath = LUNGS;
+	/** Ticks of licence left on a slip: told to go, and going. */
+	private int slipTicks;
+	/** Run the tank dry and the dog is blown: no turbo, and slower than usual. */
+	private boolean blown;
+	/** How wound up it is, 0 to 1, which is both the speed and the shape of it. */
+	private float turboProgress;
+	private float lastTurboProgress;
 
 	public WhippetEntity(EntityType<? extends WhippetEntity> entityType, World world) {
 		super(entityType, world);
@@ -219,6 +300,7 @@ public class WhippetEntity extends TameableEntity {
 		builder.add(BURROWED, false);
 		builder.add(BEGGING, false);
 		builder.add(SNOOTING, false);
+		builder.add(TURBO, false);
 	}
 
 	@Override
@@ -227,6 +309,7 @@ public class WhippetEntity extends TameableEntity {
 		view.putString("Coat", this.getCoat().getName());
 		view.putFloat("Pace", this.pace);
 		view.putInt("Hunger", this.hungerTicks);
+		view.putInt("Breath", this.breath);
 		view.put("CollarColor", DyeColor.INDEX_CODEC, this.getCollarColor());
 	}
 
@@ -245,6 +328,7 @@ public class WhippetEntity extends TameableEntity {
 		this.setCollarColor(view.read("CollarColor", DyeColor.INDEX_CODEC).orElse(DEFAULT_COLLAR_COLOR));
 		this.pace = view.getFloat("Pace", 1.0F);
 		this.hungerTicks = view.getInt("Hunger", 0);
+		this.breath = view.getInt("Breath", LUNGS);
 	}
 
 	@Override
@@ -399,6 +483,354 @@ public class WhippetEntity extends TameableEntity {
 		boolean requested = this.zoomiesRequested;
 		this.zoomiesRequested = false;
 		return requested;
+	}
+
+	/**
+	 * Turbo. A whippet has one trick nothing else in the overworld can answer:
+	 * it drops into a double-suspension gallop and goes twice as fast as a
+	 * sprinting human. What it has not got is any depth to it — about six
+	 * seconds of that, and then it is done, and a dog that runs the tank all the
+	 * way out is blown and no use to anybody for a while. So it is not a second
+	 * speed setting. It is something a whippet spends.
+	 */
+	public boolean isTurbo() {
+		return this.dataTracker.get(TURBO);
+	}
+
+	/** How wound up it is, 0 to 1. A whippet needs three strides to get going. */
+	public float getTurboProgress(float tickProgress) {
+		return MathHelper.lerp(tickProgress, this.lastTurboProgress, this.turboProgress);
+	}
+
+	/** Run right out of breath: reduced to a trot until it has some back. */
+	public boolean isBlown() {
+		return this.blown;
+	}
+
+	/** Ticks of flat-out running left, out of {@link #getLungs()}. */
+	public int getBreath() {
+		return this.breath;
+	}
+
+	public int getLungs() {
+		return this.isBaby() ? PUPPY_LUNGS : LUNGS;
+	}
+
+	/**
+	 * Slipped, which is the word the racing people use for letting one go. The
+	 * dog runs flat out at whatever it was already doing — and if it was not
+	 * doing anything, it invents something, because a whippet handed permission
+	 * to run does not stand there holding it.
+	 *
+	 * @return whether there was anything in the tank to slip
+	 */
+	public boolean slip() {
+		if (!this.hasSomethingInTheTank() || this.isTiedUp()) {
+			return false;
+		}
+
+		// A dog being let go gets up first. Being asked is one of the few things
+		// that will get a whippet off a bed.
+		this.setSitting(false);
+		this.setInSittingPose(false);
+		this.clearComfort();
+		this.slipTicks = SLIP_TICKS;
+
+		if (this.getTarget() == null && !this.isRacing()) {
+			this.requestZoomies();
+		}
+
+		return true;
+	}
+
+	/** Whether there is anything left to spend. */
+	public boolean hasSomethingInTheTank() {
+		return !this.blown && this.breath > 0;
+	}
+
+	/** On a lead, on a boat, or in the water: not going anywhere fast either way. */
+	public boolean isTiedUp() {
+		return this.isLeashed() || this.hasVehicle() || this.isTouchingWater();
+	}
+
+	/** Nothing with this dog's build declines to run. These are the things that stop it. */
+	public boolean canTurbo() {
+		if (!this.hasSomethingInTheTank() || this.isTiedUp()) {
+			return false;
+		}
+
+		// Held on the line, or still blinking at the bell: a dog that goes
+		// because somebody sprinted past the traps has jumped the gun.
+		if (this.isInTraps() || this.getReactionTicks() > 0) {
+			return false;
+		}
+
+		return !this.isInSittingPose() && !this.isBurrowed() && !this.isCurled();
+	}
+
+	/**
+	 * Decides whether the dog is flat out this tick, spends or returns breath
+	 * accordingly, and keeps the speed attribute in step with the wind-up.
+	 */
+	private void tickTurbo() {
+		boolean turbo = (this.slipTicks > 0 || this.hasSomethingWorthRunningAt()) && this.canTurbo();
+
+		if (turbo != this.isTurbo()) {
+			this.dataTracker.set(TURBO, turbo);
+		}
+
+		if (turbo) {
+			if (this.slipTicks > 0) {
+				this.slipTicks--;
+			}
+
+			if (--this.breath <= 0) {
+				this.breath = 0;
+				this.blow();
+			}
+
+			if (this.age % TURBO_REPATH_INTERVAL == 0) {
+				this.keepTheLine();
+			}
+		} else {
+			this.slipTicks = 0;
+
+			if (this.breath < this.getLungs() && this.age % RECOVERY_RATE == 0) {
+				this.breath++;
+			}
+
+			if (this.blown && this.breath >= Math.min(RECOVERED, this.getLungs())) {
+				this.blown = false;
+			}
+		}
+
+		this.applyTurboSpeed();
+		this.holdTopSpeed();
+	}
+
+	@Override
+	protected void mobTick(ServerWorld world) {
+		super.mobTick(world);
+
+		// Sighthounds run by sight, and this is where that stops being a figure
+		// of speech. This runs after the navigation has had its say and before
+		// the movement is applied, so at full stretch it overrides the path: a
+		// path is a chain of blocks with a corner at every one of them, and a
+		// dog going this fast overruns all of them and arrives having zig-zagged
+		// the whole way. Given a clear run it goes straight at the thing instead.
+		if (this.turboProgress > RUNS_BY_SIGHT_AT) {
+			this.runBySight();
+		}
+	}
+
+	/** Straight at it, while there is nothing in the way. */
+	private void runBySight() {
+		Vec3d aim = this.aimPoint();
+
+		if (aim == null) {
+			return;
+		}
+
+		Vec3d flat = new Vec3d(aim.x - this.getX(), 0.0, aim.z - this.getZ());
+		double distance = flat.horizontalLength();
+
+		if (distance < CLOSE_ENOUGH) {
+			return;
+		}
+
+		Vec3d line = flat.multiply(1.0 / distance);
+
+		if (!this.clearRun(line)) {
+			// Something in the way: hand the steering back to the pathfinder,
+			// which is slower and knows about corners.
+			return;
+		}
+
+		this.getMoveControl().moveTo(aim.x, this.getY(), aim.z, this.controlSpeedFor(this.topSpeedNow()));
+		this.getLookControl().lookAt(aim.x, aim.y, aim.z);
+	}
+
+	/** What it is running at, in the order a whippet would care about. */
+	private @Nullable Vec3d aimPoint() {
+		if (this.lurePos != null) {
+			return this.lurePos;
+		}
+
+		LivingEntity quarry = this.getTarget();
+
+		if (quarry != null && quarry.isAlive()) {
+			return quarry.getEntityPos();
+		}
+
+		if (this.getOwner() instanceof PlayerEntity owner && owner.isSprinting() && owner.getEntityWorld() == this.getEntityWorld()) {
+			return owner.getEntityPos();
+		}
+
+		// Nothing in particular: the far end of whatever it was already doing,
+		// which for a slipped dog is the next corner of its lap.
+		Path path = this.navigation.getCurrentPath();
+		return path == null ? null : Vec3d.ofBottomCenter(path.getTarget());
+	}
+
+	/**
+	 * Whether the next stride and a half is worth taking at speed: nothing to
+	 * run into at knee or chest height, something to put a foot on, and no water
+	 * to go through.
+	 */
+	private boolean clearRun(Vec3d line) {
+		World world = this.getEntityWorld();
+		BlockPos ahead = BlockPos.ofFloored(this.getX() + line.x * LOOKS_AHEAD, this.getY() + 0.1, this.getZ() + line.z * LOOKS_AHEAD);
+		BlockPos chest = ahead.up();
+		BlockPos footing = ahead.down();
+
+		if (!world.getBlockState(ahead).getCollisionShape(world, ahead).isEmpty()
+			|| !world.getBlockState(chest).getCollisionShape(world, chest).isEmpty()) {
+			return false;
+		}
+
+		if (world.getBlockState(footing).getCollisionShape(world, footing).isEmpty()) {
+			return false;
+		}
+
+		return world.getFluidState(ahead).isEmpty() && world.getFluidState(footing).isEmpty();
+	}
+
+	/**
+	 * Keeps a fresh line under a dog at full stretch. Racing is left alone —
+	 * {@link dev.whippet.whippets.entity.ai.RaceGoal} runs its own line to the
+	 * lure — and so are the zoomies, which have nowhere in particular to be.
+	 */
+	private void keepTheLine() {
+		if (this.isRacing()) {
+			return;
+		}
+
+		LivingEntity quarry = this.getTarget();
+
+		if (quarry != null && quarry.isAlive()) {
+			this.navigation.startMovingTo(quarry, TURBO_NAV_SPEED);
+			return;
+		}
+
+		if (!this.isZooming() && this.getOwner() instanceof PlayerEntity owner && owner.isSprinting()) {
+			this.navigation.startMovingTo(owner, TURBO_NAV_SPEED);
+		}
+	}
+
+	/**
+	 * Whether there is anything about that a whippet cannot let go past: quarry
+	 * far enough off that it has to be run down, or an owner who has just broken
+	 * into a run. The lure is not here — {@link dev.whippet.whippets.entity.ai.RaceGoal}
+	 * slips the dog itself, at the point in the race that dog has decided on.
+	 */
+	private boolean hasSomethingWorthRunningAt() {
+		LivingEntity target = this.getTarget();
+
+		if (target != null && target.isAlive() && this.squaredDistanceTo(target) > WORTH_RUNNING_FOR * WORTH_RUNNING_FOR) {
+			return true;
+		}
+
+		if (!this.isTamed() || this.isSitting()) {
+			return false;
+		}
+
+		// You started running. A whippet is physically unable to ignore this.
+		if (!(this.getOwner() instanceof PlayerEntity owner) || !owner.isSprinting() || owner.getEntityWorld() != this.getEntityWorld()) {
+			return false;
+		}
+
+		double distance = this.squaredDistanceTo(owner);
+		return distance > 4.0 * 4.0 && distance < KEEPS_UP_WITHIN * KEEPS_UP_WITHIN;
+	}
+
+	/** How fast this dog should be going right now, in blocks a tick. */
+	private double topSpeedNow() {
+		return MathHelper.lerp(this.turboProgress, CRUISING_SPEED, TOP_SPEED) * this.pace;
+	}
+
+	/**
+	 * What to hand the move control to end up at a given speed. The control
+	 * turns its figure into an acceleration of (speed × the movement attribute)
+	 * squared, which the ground's drag then settles into a terminal speed — so
+	 * this is derived from the speed wanted rather than guessed at, and the
+	 * attribute is left to do what it is for, which is getting there quickly.
+	 */
+	private double controlSpeedFor(double topSpeed) {
+		double attribute = this.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
+		return attribute <= 0.0 ? 1.0 : Math.sqrt(topSpeed * GROUND_DRAG) / attribute;
+	}
+
+	/**
+	 * The ceiling, held hard. The derivation above gets a dog to the right speed
+	 * on grass; ice, soul sand and mud all have their own drag, and without this
+	 * a whippet on a frozen lake would still be accelerating when it reached the
+	 * far shore.
+	 */
+	private void holdTopSpeed() {
+		if (this.turboProgress < 0.001F) {
+			return;
+		}
+
+		Vec3d velocity = this.getVelocity();
+		double flat = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+		double ceiling = this.topSpeedNow();
+
+		if (flat > ceiling) {
+			double scale = ceiling / flat;
+			this.setVelocity(velocity.x * scale, velocity.y, velocity.z * scale);
+		}
+	}
+
+	/** Out of puff. It knows, you know, and everybody hears about it. */
+	private void blow() {
+		if (this.blown) {
+			return;
+		}
+
+		this.blown = true;
+		this.playSound(VOICE.pantSound().value(), this.getSoundVolume() * 1.5F, 0.8F);
+		this.whine();
+	}
+
+	/**
+	 * The speed itself. A modifier's value cannot be changed once it is on, so
+	 * the wind-up goes on in a handful of steps. What is wanted is compared
+	 * against what is actually on the dog rather than against a remembered
+	 * value, because anything that reloads its attributes — a chunk reload, a
+	 * command, another mod — quietly drops the modifier, and a whippet that
+	 * thinks it is flat out while running at walking pace is worse than no
+	 * turbo at all. A better dog turbos harder, on the same pace that decides
+	 * races.
+	 */
+	private void applyTurboSpeed() {
+		EntityAttributeInstance speed = this.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED);
+
+		if (speed == null) {
+			return;
+		}
+
+		int step = Math.round(this.turboProgress * TURBO_STEPS);
+		double wanted = TURBO_BOOST * this.pace * step / TURBO_STEPS;
+		EntityAttributeModifier applied = speed.getModifier(TURBO_SPEED_MODIFIER_ID);
+
+		if (step == 0) {
+			if (applied != null) {
+				speed.removeModifier(TURBO_SPEED_MODIFIER_ID);
+			}
+		} else if (applied == null || applied.value() != wanted) {
+			speed.removeModifier(TURBO_SPEED_MODIFIER_ID);
+			speed.addTemporaryModifier(new EntityAttributeModifier(
+				TURBO_SPEED_MODIFIER_ID, wanted, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+			));
+		}
+
+		if (this.blown != speed.hasModifier(BLOWN_SPEED_MODIFIER_ID)) {
+			speed.removeModifier(BLOWN_SPEED_MODIFIER_ID);
+
+			if (this.blown) {
+				speed.addTemporaryModifier(BLOWN_SPEED_MODIFIER);
+			}
+		}
 	}
 
 	public boolean isBegging() {
@@ -583,6 +1015,26 @@ public class WhippetEntity extends TameableEntity {
 				}
 			}
 
+			// Crouch and hold out an empty hand at your own dog and you slip it:
+			// permission to run, which it takes entirely literally.
+			if (this.isOwner(player) && player.isSneaking() && stack.isEmpty()) {
+				if (this.getEntityWorld().isClient()) {
+					return ActionResult.SUCCESS;
+				}
+
+				if (!this.slip()) {
+					player.sendMessage(
+						Text.translatable(
+							this.isTiedUp() ? "entity.whippets.whippet.tied_up" : "entity.whippets.whippet.blown",
+							this.getRaceName()
+						),
+						true
+					);
+				}
+
+				return ActionResult.SUCCESS_SERVER;
+			}
+
 			ActionResult result = super.interactMob(player, hand);
 
 			// Bred, grown or simply eaten: any food that goes in stops the nose
@@ -678,6 +1130,11 @@ public class WhippetEntity extends TameableEntity {
 			this.lastSnootProgress = this.snootProgress;
 			float snootTarget = this.isSnooting() ? 1.0F : 0.0F;
 			this.snootProgress = this.snootProgress + (snootTarget - this.snootProgress) * (this.isSnooting() ? 0.55F : 0.2F);
+
+			// Winding up into the gallop and coming back off it. Three strides
+			// to full stretch, and rather quicker than that to stop.
+			this.lastTurboProgress = this.turboProgress;
+			this.turboProgress = MathHelper.clamp(this.turboProgress + (this.isTurbo() ? 0.09F : -0.15F), 0.0F, 1.0F);
 		}
 	}
 
@@ -716,11 +1173,44 @@ public class WhippetEntity extends TameableEntity {
 			this.navigation.stop();
 		}
 
+		if (!this.getEntityWorld().isClient()) {
+			this.tickTurbo();
+		}
+
 		if (this.getEntityWorld() instanceof ServerWorld world && this.isZooming() && this.isOnGround() && this.age % 3 == 0) {
 			world.spawnParticles(
 				ParticleTypes.CLOUD, this.getX(), this.getY() + 0.05, this.getZ(), 1, 0.1, 0.0, 0.1, 0.01
 			);
 		}
+
+		if (this.getEntityWorld() instanceof ServerWorld world && this.turboProgress > 0.4F && this.isOnGround() && this.age % 2 == 0) {
+			this.kickUpTurf(world);
+		}
+	}
+
+	/**
+	 * What a whippet at full stretch leaves behind it: whatever it is running
+	 * over, thrown backwards out of the ground.
+	 */
+	private void kickUpTurf(ServerWorld world) {
+		BlockState ground = this.getSteppingBlockState();
+
+		if (ground.isAir()) {
+			return;
+		}
+
+		Vec3d back = this.getRotationVector().multiply(-0.5);
+		world.spawnParticles(
+			new BlockStateParticleEffect(ParticleTypes.BLOCK, ground),
+			this.getX() + back.x,
+			this.getY() + 0.1,
+			this.getZ() + back.z,
+			2,
+			0.12,
+			0.02,
+			0.12,
+			0.08
+		);
 	}
 
 	/**
@@ -800,7 +1290,13 @@ public class WhippetEntity extends TameableEntity {
 	 * behind at speed and creeps further under the dog the more miserable it is.
 	 */
 	public float getTailAngle() {
-		if (this.isZooming()) {
+		if (this.blown) {
+			// Nothing left: it comes down and stays down.
+			return 0.4F;
+		} else if (this.isTurbo()) {
+			// Straight out behind, in line with the back, where it does some good.
+			return 1.55F;
+		} else if (this.isZooming()) {
 			return 1.25F;
 		} else if (this.isTamed()) {
 			float health = this.getMaxHealth();
@@ -827,7 +1323,9 @@ public class WhippetEntity extends TameableEntity {
 
 	@Override
 	protected @Nullable SoundEvent getAmbientSound() {
-		if (this.isZooming()) {
+		if (this.blown) {
+			return VOICE.pantSound().value();
+		} else if (this.isZooming()) {
 			return VOICE.pantSound().value();
 		} else if (this.isBegging() || this.isTamed() && this.getHealth() < this.getMaxHealth() * 0.5F) {
 			return WHINGE.whineSound().value();

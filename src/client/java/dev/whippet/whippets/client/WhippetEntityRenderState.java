@@ -14,6 +14,10 @@ public class WhippetEntityRenderState extends LivingEntityRenderState {
 	public float pace = 1.0F;
 	/** Ground covered last tick, in blocks: what decides trot or quick trot. */
 	public float groundSpeed;
+	/** How far into the flat-out gallop it is, 0 to 1. */
+	public float turboProgress;
+	/** Run out of breath: head down, tail down, and going nowhere fast. */
+	public boolean blown;
 	public boolean curled;
 	public float begProgress;
 	public float snootProgress;

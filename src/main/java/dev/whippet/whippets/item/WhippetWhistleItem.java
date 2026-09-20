@@ -16,6 +16,8 @@ import net.minecraft.world.World;
 /**
  * Blow it and every whippet you own within earshot stands up, stops whatever it
  * was doing and comes back to you — which is more recall than a real one offers.
+ * Crouch and blow it and you do the opposite: the whole pack is slipped, and
+ * goes flat out until it runs out of breath.
  */
 public class WhippetWhistleItem extends Item {
 	private static final double RANGE = 48.0;
@@ -28,8 +30,17 @@ public class WhippetWhistleItem extends Item {
 	@Override
 	public ActionResult use(World world, PlayerEntity user, Hand hand) {
 		ItemStack stack = user.getStackInHand(hand);
+		// Two notes: a high one to bring them in, a short low one to let them go.
+		boolean slipping = user.isSneaking();
 		world.playSound(
-			null, user.getX(), user.getY(), user.getZ(), SoundEvents.BLOCK_NOTE_BLOCK_FLUTE.value(), SoundCategory.PLAYERS, 0.9F, 1.8F
+			null,
+			user.getX(),
+			user.getY(),
+			user.getZ(),
+			SoundEvents.BLOCK_NOTE_BLOCK_FLUTE.value(),
+			SoundCategory.PLAYERS,
+			0.9F,
+			slipping ? 1.2F : 1.8F
 		);
 		user.getItemCooldownManager().set(stack, COOLDOWN_TICKS);
 
@@ -37,6 +48,25 @@ public class WhippetWhistleItem extends Item {
 			List<WhippetEntity> pack = serverWorld.getEntitiesByClass(
 				WhippetEntity.class, user.getBoundingBox().expand(RANGE), whippet -> whippet.isTamed() && whippet.isOwner(user)
 			);
+
+			if (slipping) {
+				int slipped = 0;
+
+				for (WhippetEntity whippet : pack) {
+					if (whippet.slip()) {
+						slipped++;
+					}
+				}
+
+				user.sendMessage(
+					slipped == 0
+						? Text.translatable("item.whippets.whippet_whistle.nothing_left")
+						: Text.translatable("item.whippets.whippet_whistle.slipped", slipped),
+					true
+				);
+				return ActionResult.SUCCESS;
+			}
+
 			int recalled = 0;
 
 			for (WhippetEntity whippet : pack) {
