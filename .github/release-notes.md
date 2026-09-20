@@ -1,6 +1,10 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.0.1:** the model's chest is deeper. A whippet's brisket comes down level
+with its elbow — half the height at the withers — and the model's was at 0.39,
+which made it read as a foal rather than a sighthound.
+
 ## Installing
 
 1. Install **Fabric Loader 0.19.5+** for **Minecraft 1.21.11**, and make sure

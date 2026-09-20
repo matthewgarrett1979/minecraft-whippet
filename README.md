@@ -1,4 +1,4 @@
-![Whippets — tameable sighthounds for Minecraft](docs/banner.png)
+![Whippets — tameable sighthounds for Minecraft, with Bonnie pixelated](docs/banner.png)
 
 # Whippets
 
@@ -209,12 +209,11 @@ The `BOXES` table in that script mirrors the cuboids in
 `WhippetEntityModel.getModelData()`. If you move a box in the model, move it
 there too and re-run, or the coat will land on the wrong face.
 
-The banner is made the same way rather than drawn: `tools/banner/cutout.py`
-keys the grass and sky out of an in-game screenshot to get
-`tools/banner/whippet.png`, and `tools/banner/Banner.java` composites that over
-a background with the title. The dog on the banner is the actual mob, scaled
-with nearest-neighbour so the pixels stay square — that way the banner cannot
-promise anything the mod does not deliver.
+The banner is Bonnie herself, coarsened into the game's idiom:
+`tools/banner/Pixelate.java` downsamples her photograph to a 160-square grid
+and flattens the palette with k-means, and `tools/banner/Banner.java` sets the
+result beside the title with the pixels kept square. See `tools/banner/` for
+the commands. The photograph itself is not in the repository.
 
 ## Licence
 
