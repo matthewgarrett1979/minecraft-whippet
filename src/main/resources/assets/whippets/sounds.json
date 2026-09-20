@@ -1,0 +1,14 @@
+{
+	"entity.whippet.honk": {
+		"subtitle": "subtitles.whippets.whippet.honk",
+		"sounds": [
+			"whippets:whippet/honk1",
+			"whippets:whippet/honk2",
+			"whippets:whippet/honk3",
+			{
+				"name": "whippets:whippet/honk4",
+				"weight": 2
+			}
+		]
+	}
+}

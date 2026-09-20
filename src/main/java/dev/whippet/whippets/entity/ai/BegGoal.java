@@ -92,7 +92,8 @@ public class BegGoal extends Goal {
 
 		if (this.whineIn-- <= 0) {
 			this.whineIn = 30 + this.whippet.getRandom().nextInt(40);
-			this.whippet.whine();
+			// Whining first, honking once it is clear you are not going to hand it over.
+			this.whippet.demand(this.timer);
 		}
 	}
 

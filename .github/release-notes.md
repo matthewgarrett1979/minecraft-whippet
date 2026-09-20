@@ -1,6 +1,14 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.3.0: the honk.** Whining was only ever the polite opening. Keep a
+whippet waiting for something it wants — food in your hand it has not been
+given, a squirrel up a tree, you walking off while it has been told to stay —
+and after about two and a half seconds of being ignored it stops asking and
+starts honking at you: a flat, nasal, carrying two-tone shout that is,
+unmistakably, a goose. Four takes, so a nagging dog does not loop; each dog
+honks on its own note and puppies honk higher.
+
 **In 1.2.0: the quick trot.** A whippet dawdling still uses the long easy
 diagonal trot it always had. Pushed on — chasing a squirrel, coming when it is
 called — it now shifts up into a quick trot: the cadence roughly doubles, the
@@ -45,7 +53,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.2.0.jar`** from the assets below in beside it.
+3. Put **`whippets-1.3.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
@@ -83,7 +91,8 @@ four times as fast. At night, in rain or in a cold biome it goes looking for
 bedding instead, climbs into a bed (or any wool) and disappears under the
 covers with one paw showing.
 
-**Noise.** It whines at you while you hold food, at being told to stay while
+**Noise.** It honks like a goose when it wants something and you are not
+listening. It whines at you while you hold food, at being told to stay while
 you walk off, at being left on a lead, and at being cold with nowhere to get
 under. It sighs, once and heavily, the moment it finally settles against you.
 Hold food and it tilts its head.

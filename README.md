@@ -86,6 +86,13 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
   heavily, the moment it finally settles against you. It has the small dog's
   panting and muttering and the sad dog's whine, pitched up because it is a
   narrow little animal — puppies higher still.
+- **And then it honks.** Whining is only the polite opening. Keep a whippet
+  waiting for something it wants — food in your hand it has not been given, a
+  squirrel up a tree, you walking off while it has been told to stay — and after
+  about two and a half seconds of being ignored it stops asking and starts
+  honking at you: a flat, nasal, carrying two-tone shout that is, unmistakably,
+  a goose. Every whippet owner says the same thing about this noise. Each dog
+  honks on its own note, derived from its pace, and puppies honk higher.
 
 **Taming and care** — feed a wild whippet any meat from the `#whippets:whippet_food`
 tag (rabbit, chicken, mutton or beef, raw or cooked); like a wolf it takes on
@@ -229,7 +236,7 @@ src/main/java/dev/whippet/whippets/
   entity/ai/ZoomiesGoal.java  run laps, then flop
   entity/ai/RaceGoal.java     hold in the traps, then run at the lure
   entity/ai/CuddleGoal.java   come over and lean on a settled owner
-  entity/ai/BegGoal.java      head-tilt and whine at anyone holding food
+  entity/ai/BegGoal.java      head-tilt, whine and eventually honk at anyone holding food
   entity/ai/BurrowGoal.java   find bedding and disappear under it
   entity/ai/BarkUpTheTreeGoal.java     stand under the tree and complain
   entity/ai/SquirrelFleeWhippetGoal.java  break for a trunk and go up it
@@ -266,6 +273,16 @@ rose ears folded back along the skull, a long neck carried high, a deep chest
 and a hard tuck-up, hindquarters set back under the arch, and a low whip tail.
 The proportions are held to life size — withers sixteen units, head seven,
 brisket level with the elbow — so a coat change never quietly deforms the dog.
+
+The honk is synthesised rather than recorded. `tools/generate_sounds.py` builds
+it from a pitch contour, a stack of thirty harmonics and four nasal formants,
+with jitter on the fundamental so it sounds like an animal rather than a car
+horn, and writes four takes as Ogg Vorbis:
+
+```
+pip install soundfile numpy
+python3 tools/generate_sounds.py
+```
 
 The banner is Bonnie herself, coarsened into the game's idiom:
 `tools/banner/Pixelate.java` downsamples her photograph to a 160-square grid

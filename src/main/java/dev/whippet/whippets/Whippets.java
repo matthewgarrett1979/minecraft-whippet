@@ -18,6 +18,7 @@ public class Whippets implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModEntities.initialize();
+		ModSounds.initialize();
 		ModItems.initialize();
 		ModWorldGen.initialize();
 		RaceManager.initialize();

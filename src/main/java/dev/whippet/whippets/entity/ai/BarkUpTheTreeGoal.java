@@ -75,7 +75,8 @@ public class BarkUpTheTreeGoal extends Goal {
 		}
 
 		if (this.ticks % 50 == 0) {
-			this.whippet.whine();
+			// It wants the squirrel, and it wants you to do something about it.
+			this.whippet.demand(this.ticks);
 		}
 	}
 

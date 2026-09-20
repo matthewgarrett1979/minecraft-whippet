@@ -1,6 +1,7 @@
 package dev.whippet.whippets.entity;
 
 import dev.whippet.whippets.ModEntities;
+import dev.whippet.whippets.ModSounds;
 import dev.whippet.whippets.ModTags;
 import dev.whippet.whippets.Whippets;
 import dev.whippet.whippets.entity.ai.BarkUpTheTreeGoal;
@@ -103,6 +104,13 @@ public class WhippetEntity extends TameableEntity {
 	private static final WolfSoundVariant WHINGE = SoundEvents.WOLF_SOUNDS.get(WolfSoundVariants.Type.SAD);
 	/** Ticks between whines, so they nag rather than drone. */
 	private static final int WHINE_COOLDOWN = 60;
+	/** Ticks between honks. Longer: a honk is not a background noise. */
+	private static final int HONK_COOLDOWN = 90;
+	/**
+	 * How long a whippet will ask nicely before it starts honking at you. Two
+	 * and a half seconds, which is about right.
+	 */
+	private static final int PATIENCE = 50;
 	/** Sighthounds run by sight: rabbits and chickens are the whole job description. */
 	public static final TargetPredicate.EntityPredicate PREY_PREDICATE = (entity, world) -> {
 		EntityType<?> type = entity.getType();
@@ -121,7 +129,10 @@ public class WhippetEntity extends TameableEntity {
 	/** How thoroughly tucked up this dog is; it will not come out until it is warm. */
 	private int warmth;
 	private int whineCooldown;
+	private int honkCooldown;
 	private int nagCooldown;
+	/** How long this dog has been shut out of something it wanted. */
+	private int shutOutTicks;
 	private float begProgress;
 	private float lastBegProgress;
 	private boolean settledSigh;
@@ -359,6 +370,46 @@ public class WhippetEntity extends TameableEntity {
 		this.playSound(WHINGE.whineSound().value(), this.getSoundVolume() * 1.1F, this.getSoundPitch());
 	}
 
+	/**
+	 * The honk: a flat, nasal, carrying shout, and the reason whippet owners all
+	 * say the same thing about geese. It is not a distress noise — it is a
+	 * demand, and it is aimed at you.
+	 */
+	public void honk() {
+		if (this.honkCooldown > 0 || this.isSilent()) {
+			return;
+		}
+
+		this.honkCooldown = HONK_COOLDOWN + this.random.nextInt(70);
+		// The whine shares the cooldown, so a honking dog does not also whinge
+		// over the top of itself.
+		this.whineCooldown = Math.max(this.whineCooldown, WHINE_COOLDOWN);
+		this.playSound(ModSounds.WHIPPET_HONK, this.getSoundVolume() * 1.25F, this.getHonkPitch());
+	}
+
+	/**
+	 * Asking for something. A whippet starts by whining about it and works up to
+	 * honking at you, and the longer it has been asking the more likely the honk
+	 * — which is exactly how it goes in a kitchen at teatime.
+	 *
+	 * @param persistence ticks this dog has wanted whatever it is
+	 */
+	public void demand(int persistence) {
+		if (persistence > PATIENCE || this.random.nextInt(5) == 0) {
+			this.honk();
+			return;
+		}
+
+		this.whine();
+	}
+
+	/** Puppies honk higher, and no two dogs honk on quite the same note. */
+	private float getHonkPitch() {
+		float pitch = this.isBaby() ? 1.35F : 1.0F;
+		// A dog's own voice: derived from its pace so each dog sounds like itself.
+		return pitch * (0.94F + (this.pace - 0.9F) * 0.6F) + (this.random.nextFloat() - 0.5F) * 0.06F;
+	}
+
 	/** The long-suffering sigh of a dog that has just got comfortable. */
 	private void sigh() {
 		this.playSound(WHINGE.whineSound().value(), this.getSoundVolume() * 0.7F, 0.75F + this.random.nextFloat() * 0.1F);
@@ -569,6 +620,10 @@ public class WhippetEntity extends TameableEntity {
 	public void tickMovement() {
 		super.tickMovement();
 
+		if (this.honkCooldown > 0) {
+			this.honkCooldown--;
+		}
+
 		if (this.whineCooldown > 0) {
 			this.whineCooldown--;
 		}
@@ -631,10 +686,15 @@ public class WhippetEntity extends TameableEntity {
 			double distance = this.squaredDistanceTo(owner);
 
 			if (distance > 6.0 * 6.0 && distance < 48.0 * 48.0) {
-				this.whine();
+				// Left behind and it knows it. The first call is a whine; stay
+				// away and it stops asking nicely.
+				this.demand(this.shutOutTicks);
+				this.shutOutTicks += 120;
 				return;
 			}
 		}
+
+		this.shutOutTicks = 0;
 
 		// Cold, wet, and nowhere to get under.
 		if (this.isCold() && this.random.nextInt(3) == 0) {
