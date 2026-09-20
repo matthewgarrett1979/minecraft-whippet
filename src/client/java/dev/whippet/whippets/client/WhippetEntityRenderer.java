@@ -69,6 +69,7 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 		state.groundSpeed = Math.min((float)Math.sqrt(dx * dx + dz * dz), 0.6F);
 		state.curled = whippet.isCurled();
 		state.begProgress = whippet.getBegProgress(tickProgress);
+		state.snootProgress = whippet.getSnootProgress(tickProgress);
 		state.burrowed = whippet.isBurrowed();
 		state.tailAngle = whippet.getTailAngle();
 		state.tuckProgress = whippet.getTuckProgress(tickProgress);

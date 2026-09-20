@@ -1,6 +1,17 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.4.0: the snoot.** A whippet's nose is a communication device, and it now
+uses it. A hungry one comes and finds you, works its way round behind you where
+you cannot see it coming, and puts its nose against the back of your leg — a
+cold, deliberate tap — then stands there. Ignore it and it does it again a few
+seconds later, and keeps doing it until you feed it. Whippets get hungry two or
+three times a Minecraft day, and any of the meat they tame on resets the clock.
+
+Two whippets who meet go nose to nose as well. They do not circle and posture
+the way other dogs do: they walk straight up to each other, touch noses once,
+and get on with whatever they were doing.
+
 **In 1.3.0: the honk.** Whining was only ever the polite opening. Keep a
 whippet waiting for something it wants — food in your hand it has not been
 given, a squirrel up a tree, you walking off while it has been told to stay —
@@ -53,7 +64,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.3.0.jar`** from the assets below in beside it.
+3. Put **`whippets-1.4.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
@@ -90,6 +101,9 @@ against you and curls up — and while it is there your freezing ticks come off
 four times as fast. At night, in rain or in a cold biome it goes looking for
 bedding instead, climbs into a bed (or any wool) and disappears under the
 covers with one paw showing.
+
+**The nose.** Hungry, it comes round behind you and taps the back of your leg
+with it. Meeting another whippet, it touches noses once and carries on.
 
 **Noise.** It honks like a goose when it wants something and you are not
 listening. It whines at you while you hold food, at being told to stay while

@@ -161,6 +161,16 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 			this.head.yaw = state.relativeHeadYaw * (float)(Math.PI / 180.0);
 		}
 
+		// The snoot: the neck drops, the nose goes out and slightly down, and
+		// the whole dog leans in behind it. It is a deliberate movement, not a
+		// sniff — the nose is being put somewhere.
+		if (state.snootProgress > 0.001F) {
+			float snoot = state.snootProgress;
+			this.neck.pitch += snoot * 0.45F;
+			moveTo(this.head, HEAD_Y, HEAD_Z, HEAD_Y + snoot * 1.6F, HEAD_Z - snoot * 2.2F);
+			this.head.pitch += snoot * 0.3F;
+		}
+
 		// Begging: head over on one side, which is the whole trick.
 		if (state.begProgress > 0.001F) {
 			this.realHead.roll = state.begProgress * 0.55F;

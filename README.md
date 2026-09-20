@@ -86,6 +86,12 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
   heavily, the moment it finally settles against you. It has the small dog's
   panting and muttering and the sad dog's whine, pitched up because it is a
   narrow little animal — puppies higher still.
+- **The snoot.** A whippet's nose is a communication device. A hungry one comes
+  and finds you, works its way round behind you where you cannot see it coming,
+  and puts its nose against the back of your leg — a cold, deliberate tap — then
+  stands there. Ignore it and it will do it again a few seconds later, and keep
+  doing it until you feed it. Any of the meat it tames on resets the clock;
+  a whippet gets hungry two or three times a Minecraft day.
 - **And then it honks.** Whining is only the polite opening. Keep a whippet
   waiting for something it wants — food in your hand it has not been given, a
   squirrel up a tree, you walking off while it has been told to stay — and after
@@ -93,6 +99,13 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
   honking at you: a flat, nasal, carrying two-tone shout that is, unmistakably,
   a goose. Every whippet owner says the same thing about this noise. Each dog
   honks on its own note, derived from its pace, and puppies honk higher.
+
+![Two whippets nose to nose in a walled pen, greeting each other](docs/greeting.png)
+
+**Saying hello** — two whippets who meet go nose to nose. They do not circle and
+posture the way other dogs do: they walk straight up to each other, touch noses
+once, and get on with whatever they were doing. It lasts a second, and then they
+leave each other alone for a good while.
 
 **Taming and care** — feed a wild whippet any meat from the `#whippets:whippet_food`
 tag (rabbit, chicken, mutton or beef, raw or cooked); like a wolf it takes on
@@ -238,6 +251,8 @@ src/main/java/dev/whippet/whippets/
   entity/ai/CuddleGoal.java   come over and lean on a settled owner
   entity/ai/BegGoal.java      head-tilt, whine and eventually honk at anyone holding food
   entity/ai/BurrowGoal.java   find bedding and disappear under it
+  entity/ai/SnootGoal.java    hungry: get behind them and tap the back of the leg
+  entity/ai/GreetGoal.java    nose to nose with another whippet
   entity/ai/BarkUpTheTreeGoal.java     stand under the tree and complain
   entity/ai/SquirrelFleeWhippetGoal.java  break for a trunk and go up it
   entity/ai/SquirrelTauntGoal.java     chatter at the dog from out of reach

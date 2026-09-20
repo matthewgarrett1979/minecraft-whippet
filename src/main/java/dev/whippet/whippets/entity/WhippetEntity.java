@@ -8,7 +8,9 @@ import dev.whippet.whippets.entity.ai.BarkUpTheTreeGoal;
 import dev.whippet.whippets.entity.ai.BegGoal;
 import dev.whippet.whippets.entity.ai.BurrowGoal;
 import dev.whippet.whippets.entity.ai.CuddleGoal;
+import dev.whippet.whippets.entity.ai.GreetGoal;
 import dev.whippet.whippets.entity.ai.RaceGoal;
+import dev.whippet.whippets.entity.ai.SnootGoal;
 import dev.whippet.whippets.entity.ai.ZoomiesGoal;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.DataComponentTypes;
@@ -85,6 +87,7 @@ public class WhippetEntity extends TameableEntity {
 	private static final TrackedData<Boolean> CURLED = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> BURROWED = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> BEGGING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	private static final TrackedData<Boolean> SNOOTING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
 	public static final Identifier ZOOMIES_SPEED_MODIFIER_ID = Whippets.id("zoomies");
 	private static final EntityAttributeModifier ZOOMIES_SPEED_MODIFIER = new EntityAttributeModifier(
@@ -94,6 +97,14 @@ public class WhippetEntity extends TameableEntity {
 	private static final float WILD_MAX_HEALTH = 14.0F;
 	private static final float TAMED_MAX_HEALTH = 24.0F;
 	private static final DyeColor DEFAULT_COLLAR_COLOR = DyeColor.LIGHT_BLUE;
+	/**
+	 * Ticks between meals before a whippet starts reminding you. Rather less
+	 * than half a Minecraft day, so it comes round two or three times a day —
+	 * which, if you have met one, is generous.
+	 */
+	private static final int HUNGRY_AFTER = 9000;
+	/** How long the nose stays against you, in ticks. Long enough to notice. */
+	private static final int SNOOT_TICKS = 10;
 	/** Ticks under the covers before a whippet counts as warm again. */
 	private static final int WARMED_THROUGH = 2400;
 	/**
@@ -135,6 +146,11 @@ public class WhippetEntity extends TameableEntity {
 	private int shutOutTicks;
 	private float begProgress;
 	private float lastBegProgress;
+	private float snootProgress;
+	private float lastSnootProgress;
+	/** Ticks since this dog was last fed. */
+	private int hungerTicks;
+	private int snootTicks;
 	private boolean settledSigh;
 	/** This dog's form: a lasting edge or handicap over a racing distance. */
 	private float pace = 1.0F;
@@ -168,6 +184,9 @@ public class WhippetEntity extends TameableEntity {
 		this.goalSelector.add(4, new BurrowGoal(this));
 		this.goalSelector.add(5, new CuddleGoal(this));
 		this.goalSelector.add(5, new BegGoal(this));
+		// Hungry: go and put your nose against the back of their leg.
+		this.goalSelector.add(5, new SnootGoal(this));
+		this.goalSelector.add(6, new GreetGoal(this));
 		this.goalSelector.add(6, new PounceAtTargetGoal(this, 0.45F));
 		this.goalSelector.add(6, new BarkUpTheTreeGoal(this));
 		this.goalSelector.add(7, new MeleeAttackGoal(this, 1.3, true));
@@ -199,6 +218,7 @@ public class WhippetEntity extends TameableEntity {
 		builder.add(CURLED, false);
 		builder.add(BURROWED, false);
 		builder.add(BEGGING, false);
+		builder.add(SNOOTING, false);
 	}
 
 	@Override
@@ -206,6 +226,7 @@ public class WhippetEntity extends TameableEntity {
 		super.writeCustomData(view);
 		view.putString("Coat", this.getCoat().getName());
 		view.putFloat("Pace", this.pace);
+		view.putInt("Hunger", this.hungerTicks);
 		view.put("CollarColor", DyeColor.INDEX_CODEC, this.getCollarColor());
 	}
 
@@ -223,6 +244,7 @@ public class WhippetEntity extends TameableEntity {
 
 		this.setCollarColor(view.read("CollarColor", DyeColor.INDEX_CODEC).orElse(DEFAULT_COLLAR_COLOR));
 		this.pace = view.getFloat("Pace", 1.0F);
+		this.hungerTicks = view.getInt("Hunger", 0);
 	}
 
 	@Override
@@ -280,6 +302,37 @@ public class WhippetEntity extends TameableEntity {
 
 	public float getPace() {
 		return this.pace;
+	}
+
+	/**
+	 * Hungry. A whippet that is hungry does not bark about it: it comes and puts
+	 * its nose against the back of your leg, which is worse.
+	 */
+	public boolean isHungry() {
+		return this.isTamed() && this.hungerTicks > HUNGRY_AFTER;
+	}
+
+	/** Fed. Resets the clock, whatever the food actually did for it. */
+	public void feed() {
+		this.hungerTicks = 0;
+	}
+
+	public boolean isSnooting() {
+		return this.dataTracker.get(SNOOTING);
+	}
+
+	/**
+	 * The snoot: a cold nose put deliberately against you, or against another
+	 * whippet by way of hello. It is a whole conversation in this breed.
+	 */
+	public void snoot() {
+		this.snootTicks = SNOOT_TICKS;
+		this.dataTracker.set(SNOOTING, true);
+		this.playSound(SoundEvents.ENTITY_FOX_SNIFF, this.getSoundVolume() * 0.7F, 1.2F + this.random.nextFloat() * 0.15F);
+	}
+
+	public float getSnootProgress(float tickProgress) {
+		return MathHelper.lerp(tickProgress, this.lastSnootProgress, this.snootProgress);
 	}
 
 	/** Ticks this dog is still blinking at the bell before it gets going. */
@@ -516,6 +569,7 @@ public class WhippetEntity extends TameableEntity {
 				FoodComponent food = stack.get(DataComponentTypes.FOOD);
 				float nutrition = food != null ? food.nutrition() : 1.0F;
 				this.heal(2.0F * nutrition);
+				this.feed();
 				return ActionResult.SUCCESS;
 			}
 
@@ -530,6 +584,12 @@ public class WhippetEntity extends TameableEntity {
 			}
 
 			ActionResult result = super.interactMob(player, hand);
+
+			// Bred, grown or simply eaten: any food that goes in stops the nose
+			// coming back for a while.
+			if (result.isAccepted() && this.isBreedingItem(stack)) {
+				this.feed();
+			}
 
 			if (!result.isAccepted() && this.isOwner(player)) {
 				this.setSitting(!this.isSitting());
@@ -613,6 +673,11 @@ public class WhippetEntity extends TameableEntity {
 			this.lastBegProgress = this.begProgress;
 			float begTarget = this.isBegging() ? 1.0F : 0.0F;
 			this.begProgress = this.begProgress + (begTarget - this.begProgress) * 0.25F;
+
+			// The nose goes out fast and comes back slower, the way a boop does.
+			this.lastSnootProgress = this.snootProgress;
+			float snootTarget = this.isSnooting() ? 1.0F : 0.0F;
+			this.snootProgress = this.snootProgress + (snootTarget - this.snootProgress) * (this.isSnooting() ? 0.55F : 0.2F);
 		}
 	}
 
@@ -622,6 +687,15 @@ public class WhippetEntity extends TameableEntity {
 
 		if (this.honkCooldown > 0) {
 			this.honkCooldown--;
+		}
+
+		if (this.snootTicks > 0 && --this.snootTicks == 0) {
+			this.dataTracker.set(SNOOTING, false);
+		}
+
+		// Hunger only runs for a dog that has somebody to complain to.
+		if (this.isTamed() && this.hungerTicks < HUNGRY_AFTER * 3) {
+			this.hungerTicks++;
 		}
 
 		if (this.whineCooldown > 0) {
