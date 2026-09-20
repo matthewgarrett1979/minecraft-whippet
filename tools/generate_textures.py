@@ -429,6 +429,36 @@ def draw_whistle() -> Image:
     )
 
 
+def draw_lure() -> Image:
+    """The racing lure: a rag on a stick, with a red band so the dogs see it."""
+    return from_map(
+        [
+            "................",
+            "...........###..",
+            "..........#WWW#.",
+            ".........#WWRW#.",
+            ".........#WRRW#.",
+            ".........#WWW#..",
+            "........#SS#....",
+            ".......#SS#.....",
+            "......#SS#......",
+            ".....#SS#.......",
+            "....#SS#........",
+            "...#SS#.........",
+            "..#SS#..........",
+            "..#S#...........",
+            "................",
+            "................",
+        ],
+        {
+            "#": (60, 45, 32, 255),
+            "S": (140, 101, 62, 255),
+            "W": (238, 233, 224, 255),
+            "R": (176, 64, 52, 255),
+        },
+    )
+
+
 def draw_icon() -> Image:
     """Mod icon: a whippet in profile, standing square, on a warm background."""
     size = 128
@@ -484,6 +514,7 @@ def main() -> None:
     draw_collar().write(ENTITY_DIR / "whippet_collar.png")
     draw_spawn_egg().write(ITEM_DIR / "whippet_spawn_egg.png")
     draw_whistle().write(ITEM_DIR / "whippet_whistle.png")
+    draw_lure().write(ITEM_DIR / "whippet_lure.png")
     draw_icon().write(ASSETS / "icon.png")
 
 

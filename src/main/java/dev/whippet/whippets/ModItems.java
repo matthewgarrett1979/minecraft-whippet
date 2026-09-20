@@ -1,5 +1,6 @@
 package dev.whippet.whippets;
 
+import dev.whippet.whippets.item.WhippetLureItem;
 import dev.whippet.whippets.item.WhippetWhistleItem;
 import java.util.function.Function;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
@@ -16,6 +17,7 @@ public final class ModItems {
 		"whippet_spawn_egg", SpawnEggItem::new, new Item.Settings().spawnEgg(ModEntities.WHIPPET)
 	);
 	public static final Item WHIPPET_WHISTLE = register("whippet_whistle", WhippetWhistleItem::new, new Item.Settings().maxCount(1));
+	public static final Item WHIPPET_LURE = register("whippet_lure", WhippetLureItem::new, new Item.Settings().maxCount(1));
 
 	private ModItems() {
 	}
@@ -27,6 +29,9 @@ public final class ModItems {
 
 	public static void initialize() {
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(entries -> entries.add(WHIPPET_SPAWN_EGG));
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(WHIPPET_WHISTLE));
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
+			entries.add(WHIPPET_WHISTLE);
+			entries.add(WHIPPET_LURE);
+		});
 	}
 }

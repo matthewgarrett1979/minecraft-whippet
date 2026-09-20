@@ -44,7 +44,9 @@ public class ZoomiesGoal extends Goal {
 
 	@Override
 	public boolean canStart() {
-		if (this.cooldown > 0) {
+		boolean demanded = this.whippet.consumeZoomiesRequest();
+
+		if (this.cooldown > 0 && !demanded) {
 			this.cooldown--;
 			return false;
 		}

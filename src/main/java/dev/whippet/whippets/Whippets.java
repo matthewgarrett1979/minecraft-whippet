@@ -1,5 +1,6 @@
 package dev.whippet.whippets;
 
+import dev.whippet.whippets.race.RaceManager;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 
@@ -19,5 +20,6 @@ public class Whippets implements ModInitializer {
 		ModEntities.initialize();
 		ModItems.initialize();
 		ModWorldGen.initialize();
+		RaceManager.initialize();
 	}
 }

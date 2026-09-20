@@ -48,6 +48,22 @@ brindle over a warm fawn. No whippet is ever born in it. Call one `Bonnie` with
 a name tag and she wears it whatever she was born in, the way a rabbit named
 Toast does, and she goes back to her own colours if you rename her.
 
+**Racing** — craft a lure from a stick, string and white wool. Right-click a
+block with it to peg the lure: that spot is the finish. Then stand where you
+want the start and right-click in the air. Every tamed whippet of yours within
+24 blocks is called to the line, teleported into lanes abreast facing the lure,
+and held there through a three-count — they cannot creep forward before the
+bell. On the bell they are released and run flat out at the lure; the first to
+reach it wins and takes its lap of honour, and everyone near the finish gets the
+result and the times.
+
+Every whippet has its own **form**: a pace rolled when it is born, worth about
+ten per cent either way, passed to its pups with a little drift. It also breaks
+from the traps at its own speed, and a slow break costs about half a second. On
+a short track the break decides the race; on a long one the better dog tells,
+which is the whole argument for running them over a proper distance. A pegged
+lure is remembered for the session, so peg it again after a restart.
+
 **Where they live** — plains, sunflower plains, meadows, savanna and savanna
 plateau, in ones and twos.
 
@@ -82,7 +98,11 @@ src/main/java/dev/whippet/whippets/
   entity/WhippetEntity.java   the dog: goals, taming, breeding, coats, tail carriage
   entity/WhippetCoat.java     coat variants and their weights
   entity/ai/ZoomiesGoal.java  run laps, then flop
+  entity/ai/RaceGoal.java     hold in the traps, then run at the lure
+  race/RaceManager.java       pegged lures and the races in progress
+  race/WhippetRace.java       line-up, countdown, finish times, results
   item/WhippetWhistleItem.java
+  item/WhippetLureItem.java
 src/client/java/dev/whippet/whippets/client/
   WhippetEntityModel.java     the model, and the trot / gallop / sit poses
   WhippetEntityRenderer.java  renderer, render state and the collar layer
