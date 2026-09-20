@@ -132,6 +132,42 @@ lure is remembered for the session, so peg it again after a restart.
 **Where they live** — plains, sunflower plains, meadows, savanna and savanna
 plateau, in ones and twos.
 
+![Three squirrels sitting up on their haunches — black, grey and red — under the trees](docs/squirrels.png)
+
+**The squirrel** (`whippets:squirrel`) — small, quick and entirely aware that it
+is faster up a tree than anything chasing it. Three kinds turn up: red, grey and
+a rare black one, which is a melanistic grey and does happen. They live in
+forest, birch forest, dark forest, taiga, old-growth pine and spruce taiga,
+wooded badlands and groves, in twos and threes.
+
+- **Sitting up.** Leave one alone for three seconds and it goes up on its
+  haunches with both front paws at its mouth and its tail plumed up its back.
+  This is what squirrels do and it is the reason they are in the mod.
+- **Thieving.** Drop seeds, berries, an apple or cocoa beans anywhere near one
+  and it will come and take them, carry the prize six blocks off with its cheeks
+  full, dig, bury it, and pat the ground down over it. It will not remember
+  where.
+- **Cheek.** It will take a seed out of your hand from eight blocks away and
+  only then remember that it is supposed to be frightened of you. Walk at one
+  and it goes — but not far.
+- **Breeding.** The same seeds, and kits are half-size with the full-size cheek.
+
+![A squirrel clinging to a trunk under the canopy with a brindle whippet staring up at it from the ground](docs/treed.png)
+
+**The chase** — this is the part the mod is for. Tame or wild, a whippet that
+sees a squirrel on the ground goes after it, and a sighthound over open grass
+will catch one. The squirrel's answer is the nearest trunk: it breaks for a tree
+— one that is not on the dog's side of it — takes hold of the bark and goes
+straight up, five blocks in about a second, and hangs there. Once it is more
+than a couple of blocks above the dog the chase is over and the whippet knows
+it: it loses the target, plants itself at the bottom of the tree, throws its
+head back and whines up at the branches for twenty seconds before it can be
+persuaded to give up.
+
+The squirrel, meanwhile, turns round and tells the dog exactly what it thinks of
+it — chattering at it, tail thrashing — for as long as the dog is down there.
+A whippet that does catch one eats it on the spot and is two hearts better off.
+
 ## Installing
 
 1. Install [Fabric Loader](https://fabricmc.net/use/installer/) 0.19.5 or newer
@@ -179,18 +215,24 @@ src/main/java/dev/whippet/whippets/
   ModWorldGen.java       biome spawn weights
   ModTags.java           the whippet food tag
   entity/WhippetEntity.java   the dog: goals, taming, breeding, coats, tail carriage
+  entity/SquirrelEntity.java  the squirrel: variants, sitting up, holding on to bark
   entity/WhippetCoat.java     coat variants and their weights
   entity/ai/ZoomiesGoal.java  run laps, then flop
   entity/ai/RaceGoal.java     hold in the traps, then run at the lure
   entity/ai/CuddleGoal.java   come over and lean on a settled owner
   entity/ai/BegGoal.java      head-tilt and whine at anyone holding food
   entity/ai/BurrowGoal.java   find bedding and disappear under it
+  entity/ai/BarkUpTheTreeGoal.java     stand under the tree and complain
+  entity/ai/SquirrelFleeWhippetGoal.java  break for a trunk and go up it
+  entity/ai/SquirrelTauntGoal.java     chatter at the dog from out of reach
+  entity/ai/SquirrelStashGoal.java     steal it, carry it off, bury it
   race/RaceManager.java       pegged lures and the races in progress
   race/WhippetRace.java       line-up, countdown, finish times, results
   item/WhippetWhistleItem.java
   item/WhippetLureItem.java
 src/client/java/dev/whippet/whippets/client/
   WhippetEntityModel.java     the model, the trot / gallop / sit / curl poses, the head tilt
+  SquirrelEntityModel.java    the squirrel, its tail, and the bound / sit-up / climb poses
   WhippetEntityRenderer.java  renderer, render state and the collar layer
 src/main/resources/            fabric.mod.json, textures, lang, loot table, tag, recipe
 ```
@@ -205,8 +247,8 @@ and a table of cuboid UVs, using nothing but the Python standard library:
 python3 tools/generate_textures.py
 ```
 
-The `BOXES` table in that script mirrors the cuboids in
-`WhippetEntityModel.getModelData()`. If you move a box in the model, move it
+The `WHIPPET_BOXES` and `SQUIRREL_BOXES` tables in that script mirror the
+cuboids in `WhippetEntityModel.getModelData()` and `SquirrelEntityModel`. If you move a box in a model, move it
 there too and re-run, or the coat will land on the wrong face.
 
 The shape itself is drawn from photographs of a real whippet rather than from

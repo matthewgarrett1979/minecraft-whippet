@@ -10,6 +10,27 @@ public final class ModWorldGen {
 	}
 
 	public static void initialize() {
+		// Squirrels want trees, and plenty of them.
+		BiomeModifications.addSpawn(
+			BiomeSelectors.includeByKey(
+				BiomeKeys.FOREST,
+				BiomeKeys.FLOWER_FOREST,
+				BiomeKeys.BIRCH_FOREST,
+				BiomeKeys.OLD_GROWTH_BIRCH_FOREST,
+				BiomeKeys.DARK_FOREST,
+				BiomeKeys.TAIGA,
+				BiomeKeys.OLD_GROWTH_PINE_TAIGA,
+				BiomeKeys.OLD_GROWTH_SPRUCE_TAIGA,
+				BiomeKeys.WOODED_BADLANDS,
+				BiomeKeys.GROVE
+			),
+			SpawnGroup.CREATURE,
+			ModEntities.SQUIRREL,
+			10,
+			2,
+			4
+		);
+
 		// Open, grassy country: room to run, and rabbits to run after.
 		BiomeModifications.addSpawn(
 			BiomeSelectors.includeByKey(

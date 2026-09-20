@@ -3,6 +3,7 @@ package dev.whippet.whippets.entity;
 import dev.whippet.whippets.ModEntities;
 import dev.whippet.whippets.ModTags;
 import dev.whippet.whippets.Whippets;
+import dev.whippet.whippets.entity.ai.BarkUpTheTreeGoal;
 import dev.whippet.whippets.entity.ai.BegGoal;
 import dev.whippet.whippets.entity.ai.BurrowGoal;
 import dev.whippet.whippets.entity.ai.CuddleGoal;
@@ -16,6 +17,7 @@ import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.TargetPredicate;
+import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.AnimalMateGoal;
 import net.minecraft.entity.ai.goal.AttackWithOwnerGoal;
 import net.minecraft.entity.ai.goal.FollowOwnerGoal;
@@ -48,6 +50,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.DyeItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -105,6 +108,8 @@ public class WhippetEntity extends TameableEntity {
 		EntityType<?> type = entity.getType();
 		return type == EntityType.RABBIT || type == EntityType.CHICKEN;
 	};
+	/** What a whippet gets back for catching one, which is most of the appeal. */
+	private static final float SQUIRREL_IS_WORTH = 4.0F;
 
 	private float tuckProgress;
 	private float lastTuckProgress;
@@ -153,6 +158,7 @@ public class WhippetEntity extends TameableEntity {
 		this.goalSelector.add(5, new CuddleGoal(this));
 		this.goalSelector.add(5, new BegGoal(this));
 		this.goalSelector.add(6, new PounceAtTargetGoal(this, 0.45F));
+		this.goalSelector.add(6, new BarkUpTheTreeGoal(this));
 		this.goalSelector.add(7, new MeleeAttackGoal(this, 1.3, true));
 		this.goalSelector.add(8, new FollowOwnerGoal(this, 1.35, 10.0F, 2.0F));
 		this.goalSelector.add(9, new AnimalMateGoal(this, 1.0));
@@ -164,6 +170,13 @@ public class WhippetEntity extends TameableEntity {
 		this.targetSelector.add(2, new AttackWithOwnerGoal(this));
 		this.targetSelector.add(3, new RevengeGoal(this).setGroupRevenge());
 		this.targetSelector.add(4, new UntamedActiveTargetGoal<>(this, AnimalEntity.class, false, PREY_PREDICATE));
+		// Squirrels are the exception to every rule about a well-behaved dog:
+		// tame or wild, sighthounds go after them. Only while the squirrel is
+		// still on the ground, though — once it is up the trunk the chase is
+		// over and the dog knows it, whatever it says about it afterwards.
+		this.targetSelector.add(5, new ActiveTargetGoal<>(this, SquirrelEntity.class, 10, true, false, (entity, world) -> {
+			return !this.isRacing() && !this.isInSittingPose() && entity instanceof SquirrelEntity squirrel && squirrel.isReachable(this.getY());
+		}));
 	}
 
 	@Override
@@ -222,6 +235,31 @@ public class WhippetEntity extends TameableEntity {
 
 	public void setCollarColor(DyeColor color) {
 		this.dataTracker.set(COLLAR_COLOR, color.getIndex());
+	}
+
+	/**
+	 * A caught squirrel is eaten on the spot, and the dog is pleased with itself
+	 * for a while afterwards. Rabbits and chickens go the same way.
+	 */
+	@Override
+	public boolean onKilledOther(ServerWorld world, LivingEntity other, DamageSource damageSource) {
+		if (other instanceof SquirrelEntity) {
+			this.heal(SQUIRREL_IS_WORTH);
+			this.playSound(SoundEvents.ENTITY_FOX_EAT, 0.7F, this.getSoundPitch());
+			world.spawnParticles(
+				new net.minecraft.particle.ItemStackParticleEffect(ParticleTypes.ITEM, new ItemStack(Items.RABBIT)),
+				this.getX(),
+				this.getY() + 0.35,
+				this.getZ(),
+				12,
+				0.2,
+				0.1,
+				0.2,
+				0.03
+			);
+		}
+
+		return super.onKilledOther(world, other, damageSource);
 	}
 
 	/** Form is mostly luck of the draw, clustered around average. */

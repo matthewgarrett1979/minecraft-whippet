@@ -27,12 +27,13 @@ import zlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "src" / "main" / "resources" / "assets" / "whippets"
 ENTITY_DIR = ASSETS / "textures" / "entity" / "whippet"
+SQUIRREL_DIR = ASSETS / "textures" / "entity" / "squirrel"
 ITEM_DIR = ASSETS / "textures" / "item"
 
 TRANSPARENT = (0, 0, 0, 0)
 
 # name -> (u, v, width, height, depth)
-BOXES = {
+WHIPPET_BOXES = {
     "skull": (0, 0, 3, 3, 5),
     "muzzle": (20, 0, 2, 2, 3),
     "ear": (36, 0, 1, 2, 3),
@@ -44,13 +45,24 @@ BOXES = {
     "neck": (32, 28, 3, 3, 7),
 }
 
+SQUIRREL_BOXES = {
+    "body": (0, 0, 4, 4, 6),
+    "head": (20, 0, 4, 4, 4),
+    "muzzle": (36, 0, 2, 2, 1),
+    "ear": (44, 0, 2, 2, 1),
+    "leg": (0, 12, 2, 3, 2),
+    "tail": (10, 12, 4, 8, 3),
+    "tail_tip": (26, 12, 5, 5, 3),
+    "nut": (44, 12, 2, 2, 2),
+}
+
 BODY_BOXES = ("chest", "loin", "neck", "haunch", "tail")
 FLANKS = ("west", "east")
 SIDES = ("west", "north", "east", "south")
 
 
-def faces(box: str) -> dict[str, tuple[int, int, int, int]]:
-    u, v, w, h, d = BOXES[box]
+def faces(box: str, boxes: dict | None = None) -> dict[str, tuple[int, int, int, int]]:
+    u, v, w, h, d = (boxes or WHIPPET_BOXES)[box]
     return {
         "top": (u + d, v, w, d),
         "bottom": (u + d + w, v, w, d),
@@ -85,10 +97,12 @@ def shift(color: tuple[int, int, int, int], amount: float) -> tuple[int, int, in
 
 
 class Image:
-    def __init__(self, width: int, height: int, fill=TRANSPARENT):
+    def __init__(self, width: int, height: int, fill=TRANSPARENT, boxes: dict | None = None):
         self.width = width
         self.height = height
         self.pixels = [[fill] * width for _ in range(height)]
+        # Which animal's cuboid table this sheet is laid out for.
+        self.boxes = boxes or WHIPPET_BOXES
 
     def set(self, x: int, y: int, color) -> None:
         if 0 <= x < self.width and 0 <= y < self.height:
@@ -100,26 +114,26 @@ class Image:
                 self.set(x + dx, y + dy, color)
 
     def fill_face(self, box: str, face: str, color) -> None:
-        x, y, w, h = faces(box)[face]
+        x, y, w, h = faces(box, self.boxes)[face]
         self.rect(x, y, w, h, color)
 
     def fill_box(self, box: str, color) -> None:
-        for face in faces(box):
+        for face in faces(box, self.boxes):
             self.fill_face(box, face, color)
 
     def face_row(self, box: str, face: str, row: int, color) -> None:
         """Paints one row of a face, counted from its top edge."""
-        x, y, w, h = faces(box)[face]
+        x, y, w, h = faces(box, self.boxes)[face]
         if 0 <= row < h:
             self.rect(x, y + row, w, 1, color)
 
     def face_rows_from_bottom(self, box: str, face: str, count: int, color) -> None:
-        x, y, w, h = faces(box)[face]
+        x, y, w, h = faces(box, self.boxes)[face]
         self.rect(x, y + max(0, h - count), w, min(count, h), color)
 
     def stripe_face(self, box: str, face: str, color, period: int = 3) -> None:
         """Vertical brindle striping: columns on the flanks, rows on top/bottom."""
-        x, y, w, h = faces(box)[face]
+        x, y, w, h = faces(box, self.boxes)[face]
         if face in ("top", "bottom"):
             for dy in range(h):
                 if dy % period == 0:
@@ -238,7 +252,7 @@ def draw_coat(coat: Coat) -> Image:
     shade = shift(coat.base, -0.18)
     highlight = shift(coat.base, 0.10)
 
-    for box in BOXES:
+    for box in WHIPPET_BOXES:
         image.fill_box(box, coat.base)
         image.fill_face(box, "top", highlight)
 
@@ -339,6 +353,174 @@ def draw_coat(coat: Coat) -> Image:
         image.fill_face("tail", "bottom", WHITE)
 
     return image
+
+
+class Squirrel:
+    """One squirrel's colouring. Cuteness is mostly the pale bits."""
+
+    def __init__(
+        self,
+        name: str,
+        base: tuple[int, int, int, int],
+        belly: tuple[int, int, int, int],
+        fringe: tuple[int, int, int, int],
+        ear: tuple[int, int, int, int],
+        nose: tuple[int, int, int, int],
+        ring: tuple[int, int, int, int],
+        saddle: tuple[int, int, int, int] | None = None,
+    ):
+        self.name = name
+        self.base = base
+        self.belly = belly
+        # The pale edge that makes the tail read as a plume rather than a plank.
+        self.fringe = fringe
+        self.ear = ear
+        self.nose = nose
+        # The pale ring that makes the eye look twice the size it is.
+        self.ring = ring
+        self.saddle = saddle
+
+
+SQUIRRELS = [
+    Squirrel(
+        "red",
+        (168, 92, 46, 255),
+        (243, 234, 218, 255),
+        (216, 160, 110, 255),
+        (231, 190, 150, 255),
+        (48, 36, 32, 255),
+        (245, 238, 226, 255),
+    ),
+    Squirrel(
+        "grey",
+        (146, 146, 142, 255),
+        (243, 241, 237, 255),
+        (212, 212, 208, 255),
+        (196, 190, 186, 255),
+        (52, 50, 50, 255),
+        (245, 243, 239, 255),
+        saddle=(150, 128, 100, 255),
+    ),
+    Squirrel(
+        "black",
+        (52, 48, 46, 255),
+        (96, 90, 85, 255),
+        (80, 74, 70, 255),
+        (86, 74, 70, 255),
+        (26, 25, 25, 255),
+        (158, 148, 138, 255),
+    ),
+]
+
+ACORN_CAP = (92, 62, 38, 255)
+ACORN_NUT = (188, 142, 88, 255)
+
+
+def draw_squirrel(squirrel: Squirrel) -> Image:
+    image = Image(64, 32, boxes=SQUIRREL_BOXES)
+    highlight = shift(squirrel.base, 0.10)
+    shade = shift(squirrel.base, -0.16)
+
+    for box in SQUIRREL_BOXES:
+        image.fill_box(box, squirrel.base)
+        image.fill_face(box, "top", highlight)
+
+    # A warm saddle over the back, the way a grey squirrel browns off along
+    # the spine in summer.
+    if squirrel.saddle:
+        for box in ("body", "head"):
+            image.fill_face(box, "top", blend(highlight, squirrel.saddle, 0.45))
+
+    # Pale from the chin all the way down the belly: the bit you only see when
+    # it sits up, which is when you are looking.
+    for box in ("body", "head"):
+        image.fill_face(box, "bottom", squirrel.belly)
+
+    image.fill_face("muzzle", "bottom", blend(squirrel.base, squirrel.belly, 0.7))
+
+    for face in FLANKS:
+        image.face_rows_from_bottom("body", face, 1, blend(squirrel.base, squirrel.belly, 0.6))
+
+    image.fill_face("body", "north", blend(squirrel.base, squirrel.belly, 0.75))
+    image.face_row("body", "west", 0, shade)
+    image.face_row("body", "east", 0, shade)
+
+    # The tail: base down the middle, pale fringe up both edges and over the
+    # top, which is what makes it look like hair rather than a board.
+    for box in ("tail", "tail_tip"):
+        for face in FLANKS:
+            x, y, w, h = faces(box, SQUIRREL_BOXES)[face]
+            image.rect(x, y, 1, h, squirrel.fringe)
+            image.rect(x + w - 1, y, 1, h, squirrel.fringe)
+        image.fill_face(box, "north", squirrel.fringe)
+        image.fill_face(box, "south", squirrel.fringe)
+        image.face_row(box, "top", 0, squirrel.fringe)
+    image.fill_face("tail_tip", "bottom", squirrel.fringe)
+
+    # Ears: pale inside, dark tufted tip.
+    image.fill_face("ear", "north", squirrel.ear)
+    for face in ("west", "east"):
+        image.face_row("ear", face, 0, shift(squirrel.base, -0.3))
+    image.face_row("ear", "top", 0, shift(squirrel.base, -0.3))
+
+    # Face: dark nose on the front of the muzzle, pale cheeks under it.
+    image.fill_face("muzzle", "north", shift(squirrel.base, -0.12))
+    mx, my, mw, _ = faces("muzzle", SQUIRREL_BOXES)["north"]
+    image.rect(mx, my, mw, 1, squirrel.nose)
+    for face in FLANKS:
+        image.face_rows_from_bottom("muzzle", face, 1, squirrel.belly)
+
+    # Eyes, big and dark in a pale ring. A squirrel is 60% eye.
+    head = faces("head", SQUIRREL_BOXES)
+    wx, wy, ww, _ = head["west"]
+    ex, ey, _, _ = head["east"]
+    image.rect(wx + ww - 3, wy + 1, 2, 2, squirrel.ring)
+    image.rect(ex + 1, ey + 1, 2, 2, squirrel.ring)
+    image.set(wx + ww - 2, wy + 1, EYE)
+    image.set(ex + 1, ey + 1, EYE)
+
+    # Little pale hands and feet.
+    for face in SIDES:
+        image.face_rows_from_bottom("leg", face, 1, blend(squirrel.base, squirrel.belly, 0.7))
+    image.fill_face("leg", "bottom", blend(squirrel.base, squirrel.belly, 0.7))
+
+    # Whatever it is carrying is always drawn as an acorn, because an acorn is
+    # funnier than whatever it actually stole.
+    image.fill_box("nut", ACORN_NUT)
+    image.fill_face("nut", "top", ACORN_CAP)
+    for face in SIDES:
+        image.face_row("nut", face, 0, ACORN_CAP)
+
+    return image
+
+
+def draw_squirrel_spawn_egg() -> Image:
+    """Spawn-egg silhouette: a rusty shell with pale flecks."""
+    return from_map(
+        [
+            "................",
+            ".....######.....",
+            "....#RRRRRR#....",
+            "...#RRPRRRRR#...",
+            "...#RRRRRPRR#...",
+            "..#RRRPRRRRRR#..",
+            "..#RPRRRRRPRR#..",
+            "..#RRRRRPRRRR#..",
+            "..#RRPRRRRRRR#..",
+            "..#RRRRRRPRRR#..",
+            "..#RPRRRRRRPR#..",
+            "...#RRRPRRRR#...",
+            "...#RRRRRRPR#...",
+            "....#RRPRRR#....",
+            ".....######.....",
+            "................",
+        ],
+        {
+            "#": (86, 44, 24, 255),
+            "R": (168, 92, 46, 255),
+            "P": (238, 226, 208, 255),
+        },
+    )
 
 
 def draw_collar() -> Image:
@@ -522,6 +704,11 @@ def main() -> None:
     for coat in COATS:
         draw_coat(coat).write(ENTITY_DIR / f"whippet_{coat.name}.png")
     draw_collar().write(ENTITY_DIR / "whippet_collar.png")
+
+    for squirrel in SQUIRRELS:
+        draw_squirrel(squirrel).write(SQUIRREL_DIR / f"squirrel_{squirrel.name}.png")
+
+    draw_squirrel_spawn_egg().write(ITEM_DIR / "squirrel_spawn_egg.png")
     draw_spawn_egg().write(ITEM_DIR / "whippet_spawn_egg.png")
     draw_whistle().write(ITEM_DIR / "whippet_whistle.png")
     draw_lure().write(ITEM_DIR / "whippet_lure.png")

@@ -23,5 +23,11 @@
 	"coat.whippets.blue": "blue",
 	"coat.whippets.black": "black",
 	"coat.whippets.white": "white one",
-	"coat.whippets.bonnie": "blue brindle"
+	"coat.whippets.bonnie": "blue brindle",
+	"entity.whippets.squirrel": "Squirrel",
+	"item.whippets.squirrel_spawn_egg": "Squirrel Spawn Egg",
+	"tag.item.whippets.squirrel_food": "Squirrel Food",
+	"variant.whippets.red": "red",
+	"variant.whippets.grey": "grey",
+	"variant.whippets.black": "black"
 }

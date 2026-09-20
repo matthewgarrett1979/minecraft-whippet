@@ -16,6 +16,9 @@ public final class ModItems {
 	public static final Item WHIPPET_SPAWN_EGG = register(
 		"whippet_spawn_egg", SpawnEggItem::new, new Item.Settings().spawnEgg(ModEntities.WHIPPET)
 	);
+	public static final Item SQUIRREL_SPAWN_EGG = register(
+		"squirrel_spawn_egg", SpawnEggItem::new, new Item.Settings().spawnEgg(ModEntities.SQUIRREL)
+	);
 	public static final Item WHIPPET_WHISTLE = register("whippet_whistle", WhippetWhistleItem::new, new Item.Settings().maxCount(1));
 	public static final Item WHIPPET_LURE = register("whippet_lure", WhippetLureItem::new, new Item.Settings().maxCount(1));
 
@@ -28,7 +31,10 @@ public final class ModItems {
 	}
 
 	public static void initialize() {
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(entries -> entries.add(WHIPPET_SPAWN_EGG));
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(entries -> {
+			entries.add(WHIPPET_SPAWN_EGG);
+			entries.add(SQUIRREL_SPAWN_EGG);
+		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
 			entries.add(WHIPPET_WHISTLE);
 			entries.add(WHIPPET_LURE);

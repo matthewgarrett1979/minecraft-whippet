@@ -1,5 +1,6 @@
 package dev.whippet.whippets;
 
+import dev.whippet.whippets.entity.SquirrelEntity;
 import dev.whippet.whippets.entity.WhippetEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityType;
 import net.minecraft.entity.EntityType;
@@ -31,6 +32,25 @@ public final class ModEntities {
 			.passengerAttachments(1.1F)
 			.maxTrackingRange(10)
 			.build(WHIPPET_KEY)
+	);
+
+	public static final RegistryKey<EntityType<?>> SQUIRREL_KEY = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Whippets.id("squirrel"));
+
+	public static final EntityType<SquirrelEntity> SQUIRREL = Registry.register(
+		Registries.ENTITY_TYPE,
+		SQUIRREL_KEY,
+		FabricEntityType.Builder.createMob(
+				SquirrelEntity::new,
+				SpawnGroup.CREATURE,
+				mob -> mob.spawnRestriction(
+						SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AnimalEntity::isValidNaturalSpawn
+					)
+					.defaultAttributes(SquirrelEntity::createSquirrelAttributes)
+			)
+			.dimensions(0.5F, 0.6F)
+			.eyeHeight(0.45F)
+			.maxTrackingRange(8)
+			.build(SQUIRREL_KEY)
 	);
 
 	private ModEntities() {

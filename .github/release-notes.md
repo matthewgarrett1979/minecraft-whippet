@@ -1,6 +1,20 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.1.0: squirrels.** Red, grey and a rare black one, in forest and taiga.
+They sit up on their haunches with both paws at their mouth, steal any seeds or
+berries you drop and bury them six blocks away, and will take food out of your
+hand and then remember they are supposed to be frightened of you.
+
+And they are what whippets are for. Tame or wild, a whippet that sees one on the
+ground goes after it and over open grass will catch it — a caught squirrel is
+eaten on the spot and is worth two hearts. The squirrel's answer is the nearest
+trunk: it breaks for a tree on the far side of itself, takes hold of the bark
+and goes straight up, then hangs there and chatters at the dog with its tail
+thrashing. The whippet loses the target the moment it is out of reach, plants
+itself at the bottom of the tree, throws its head back and whines up at the
+branches until it can be persuaded to give up.
+
 **In 1.0.3:** the mod is MIT licensed. It was all rights reserved, inherited
 from the repository it started in, which meant nobody could legally run it.
 Use it, change it, ship it in a pack; keep the notice with it. No code changed.
@@ -20,7 +34,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.0.3.jar`** from the assets below in beside it.
+3. Put **`whippets-1.1.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
@@ -30,6 +44,9 @@ Your `mods` folder is `%appdata%\.minecraft\mods` on Windows,
 on Linux.
 
 ## What you get
+
+**The squirrels.** Three kinds in the wood, cheeky to a fault, and the whole
+reason the dogs now spend their afternoons staring up trees.
 
 **The dog.** Five coats in the wild — fawn, brindle, blue, black and a rare
 white — rolled on spawn, saved per dog and inherited when two whippets breed.
