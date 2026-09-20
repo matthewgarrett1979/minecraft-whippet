@@ -1,6 +1,14 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.5.0: that is a real whippet.** The honk is no longer synthesised. It is
+Bonnie — the whippet this mod was drawn from — recorded on a phone by her owner
+and cut into four takes, one of them a double with her own gap between the two
+calls. She turns out to sound nothing like the guess: short, bright and nasal,
+around 340-610 Hz with the weight up between 500 Hz and 2.5 kHz, rather than
+the long low goose honk that stood in for her. The dogs still pitch it a little
+each, so no two honk on the same note.
+
 **In 1.4.0: the snoot.** A whippet's nose is a communication device, and it now
 uses it. A hungry one comes and finds you, works its way round behind you where
 you cannot see it coming, and puts its nose against the back of your leg — a
@@ -64,7 +72,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.4.0.jar`** from the assets below in beside it.
+3. Put **`whippets-1.5.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
@@ -105,10 +113,10 @@ covers with one paw showing.
 **The nose.** Hungry, it comes round behind you and taps the back of your leg
 with it. Meeting another whippet, it touches noses once and carries on.
 
-**Noise.** It honks like a goose when it wants something and you are not
-listening. It whines at you while you hold food, at being told to stay while
-you walk off, at being left on a lead, and at being cold with nowhere to get
-under. It sighs, once and heavily, the moment it finally settles against you.
+**Noise.** It honks when it wants something and you are not listening, in the
+voice of an actual whippet called Bonnie. It whines at you while you hold food,
+at being told to stay while you walk off, at being left on a lead, and at being
+cold with nowhere to get under. It sighs, once and heavily, the moment it finally settles against you.
 Hold food and it tilts its head.
 
 **A whistle** (two iron nuggets and a bone) stands the whole pack up within 48

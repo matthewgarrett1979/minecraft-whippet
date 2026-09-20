@@ -96,9 +96,13 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
   waiting for something it wants — food in your hand it has not been given, a
   squirrel up a tree, you walking off while it has been told to stay — and after
   about two and a half seconds of being ignored it stops asking and starts
-  honking at you: a flat, nasal, carrying two-tone shout that is, unmistakably,
-  a goose. Every whippet owner says the same thing about this noise. Each dog
-  honks on its own note, derived from its pace, and puppies honk higher.
+  honking at you. Every whippet owner says the same thing about this noise, and
+  the mod does not imitate it: **the honk is a real whippet honking.** Bonnie,
+  recorded on a phone by her owner, four takes including one double with her own
+  gap between the calls. Short, bright and nasal, nothing like the long low
+  goose honk that was synthesised in her place first. Each dog honks on its own
+  note, derived from its pace, and puppies honk higher. See
+  [docs/sound.md](docs/sound.md).
 
 ![Two whippets nose to nose in a walled pen, greeting each other](docs/greeting.png)
 
@@ -289,15 +293,11 @@ and a hard tuck-up, hindquarters set back under the arch, and a low whip tail.
 The proportions are held to life size — withers sixteen units, head seven,
 brisket level with the elbow — so a coat change never quietly deforms the dog.
 
-The honk is synthesised rather than recorded. `tools/generate_sounds.py` builds
-it from a pitch contour, a stack of thirty harmonics and four nasal formants,
-with jitter on the fundamental so it sounds like an animal rather than a car
-horn, and writes four takes as Ogg Vorbis:
-
-```
-pip install soundfile numpy
-python3 tools/generate_sounds.py
-```
+The honk is the exception to all of this: it is a recording of Bonnie, not
+generated at all. How it was cleaned and cut is in [docs/sound.md](docs/sound.md).
+`tools/generate_sounds.py` still synthesises one from a pitch contour, thirty
+harmonics and four nasal formants — that is what shipped before there was a
+recording — but it writes to `tools/synthesised-honks/` now and nothing uses it.
 
 The banner is Bonnie herself, coarsened into the game's idiom:
 `tools/banner/Pixelate.java` downsamples her photograph to a 160-square grid

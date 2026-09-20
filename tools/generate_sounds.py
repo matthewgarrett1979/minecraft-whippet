@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Generates the mod's sound effects.
+"""Synthesises a whippet's honk, which is how the mod's honk sounded before
+there was a real one.
 
-Like the textures, nothing here was recorded: the honk is synthesised from a
-pitch contour, a harmonic stack and a set of formants, so changing it is a
-matter of moving a number rather than finding a microphone and a goose.
+The shipped honk is now Bonnie herself — see `docs/sound.md`. This script is
+kept because it is where the honk came from, because it still documents what a
+honk is made of, and because it will make a fresh one if her recordings ever
+have to come out. It writes to tools/synthesised-honks/ so that running it
+cannot overwrite her.
 
     pip install soundfile numpy
     python3 tools/generate_sounds.py
@@ -23,7 +26,7 @@ import numpy as np
 import soundfile as sf
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SOUNDS = ROOT / "src" / "main" / "resources" / "assets" / "whippets" / "sounds" / "whippet"
+SOUNDS = ROOT / "tools" / "synthesised-honks"
 
 RATE = 44100
 # Nasal formants. Each is (centre Hz, bandwidth Hz, gain).
