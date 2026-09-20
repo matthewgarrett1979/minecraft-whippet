@@ -91,10 +91,26 @@ plateau, in ones and twos.
 
 ## Installing
 
-Install Fabric Loader for 1.21.11, then drop `whippets-1.0.0.jar` and
-[Fabric API](https://modrinth.com/mod/fabric-api) into your `mods/` folder. The
-mod works on a client, on a dedicated server, or both — everything it adds is
-registered on both sides.
+1. Install [Fabric Loader](https://fabricmc.net/use/installer/) 0.19.5 or newer
+   for Minecraft 1.21.11, and make sure you have Java 21 to play on.
+2. Put [Fabric API](https://modrinth.com/mod/fabric-api) (0.141.6+1.21.11 or
+   newer) in your `mods/` folder.
+3. Put `whippets-1.0.0.jar` in beside it.
+
+The mod works on a client, on a dedicated server, or both — everything it adds
+is registered on both sides. For multiplayer, the jar has to be on the server
+and on every client.
+
+### Where to get the jar
+
+Either build it (below), or let CI do it: `.github/workflows/whippets.yml`
+builds the mod, boots a dedicated server with it to check the jar actually
+loads, and uploads the result.
+
+- **A release:** push a tag — `git tag whippets-v1.0.0 && git push origin
+  whippets-v1.0.0` — and the jar is attached to a GitHub release.
+- **A one-off build:** Actions → "Whippets mod" → Run workflow. The jar lands
+  on the run's summary page as an artifact.
 
 ## Building
 
