@@ -11,7 +11,7 @@
 		"homepage": "https://github.com/matthewgarrett1979/minecraft-whippet",
 		"sources": "https://github.com/matthewgarrett1979/minecraft-whippet"
 	},
-	"license": "ARR",
+	"license": "MIT",
 	"icon": "assets/whippets/icon.png",
 	"environment": "*",
 	"entrypoints": {

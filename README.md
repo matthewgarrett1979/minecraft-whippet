@@ -224,5 +224,9 @@ the commands. The photograph itself is not in the repository.
 
 ## Licence
 
-All rights reserved — see `LICENSE`. If you would rather this were MIT, that is
-one line there and one in `fabric.mod.json`.
+MIT — see `LICENSE`. Use it, change it, put it in your own pack; keep the
+copyright notice with it.
+
+Minecraft, Fabric Loader and Fabric API come under their own terms from their
+own authors, and this mod is not affiliated with or endorsed by Mojang or
+Microsoft.
