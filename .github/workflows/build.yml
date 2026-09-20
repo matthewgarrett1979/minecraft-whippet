@@ -29,9 +29,10 @@ jobs:
       - run: ./gradlew build --no-daemon
 
       # The mod ships no unit tests: the check that matters is whether the
-      # remapped jar loads on a stock server next to Fabric API, so boot one.
-      # Only the log is asserted on — commands piped to a server's stdin are not
-      # reliable enough to gate a build on.
+      # remapped jar loads on a stock server next to Fabric API, so boot one and
+      # read the log. Nothing is sent to the server's console — commands piped
+      # to its stdin are not reliable enough to gate a build on, which is how
+      # this step failed the first time it ran.
       - name: Boot a dedicated server with the jar installed
         run: |
           set -euo pipefail
@@ -44,7 +45,19 @@ jobs:
           echo "eula=true" > eula.txt
           # Port 0 keeps the boot from colliding with anything else on the runner.
           printf 'level-type=minecraft\\:flat\nmax-tick-time=-1\nserver-port=0\nonline-mode=false\n' > server.properties
-          timeout 300 java -Xmx2G -jar server.jar nogui <<< "stop" | tee boot.log
+
+          java -Xmx2G -jar server.jar nogui > boot.log 2>&1 &
+          server=$!
+          for _ in $(seq 1 90); do
+            if grep -qE "Done \(" boot.log 2>/dev/null; then break; fi
+            if ! kill -0 "$server" 2>/dev/null; then break; fi
+            sleep 2
+          done
+          kill "$server" 2>/dev/null || true
+          wait "$server" 2>/dev/null || true
+
+          echo "--- server log ---"
+          grep -E "Loading [0-9]+ mods|whippets [0-9]|biome modifications|Done \(" boot.log || true
           grep -q "whippets 1" boot.log
           grep -qE "Done \(" boot.log
           if grep -qE "Mod resolution failed|Failed to load|Incompatible mod set" boot.log; then
