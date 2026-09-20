@@ -48,6 +48,19 @@ brindle over a warm fawn. No whippet is ever born in it. Call one `Bonnie` with
 a name tag and she wears it whatever she was born in, the way a rabbit named
 Toast does, and she goes back to her own colours if you rename her.
 
+**Comfort** — whippets are heat-seeking. Sit still, sneak or go to sleep
+anywhere near one of yours and it will come over, press itself against you and
+curl up, with the odd heart to say so, and it stays there until you move. While
+it is curled against you it thaws you out: your freezing ticks come off four
+times as fast, so a whippet on your lap is powder-snow insurance.
+
+**Under the covers** — at night, in rain or snow, or in a cold biome, a whippet
+goes looking for bedding: a bed within ten blocks, or failing that any wool or
+carpet. It climbs in, disappears under the covers and leaves a lump and a paw
+showing. It stays until it has warmed through, and all night if it is night,
+healing slowly while it is in there, and it stops shivering as soon as it is
+tucked up. Blow the whistle if you want it out.
+
 **Racing** — craft a lure from a stick, string and white wool. Right-click a
 block with it to peg the lure: that spot is the finish. Then stand where you
 want the start and right-click in the air. Every tamed whippet of yours within
@@ -99,12 +112,14 @@ src/main/java/dev/whippet/whippets/
   entity/WhippetCoat.java     coat variants and their weights
   entity/ai/ZoomiesGoal.java  run laps, then flop
   entity/ai/RaceGoal.java     hold in the traps, then run at the lure
+  entity/ai/CuddleGoal.java   come over and lean on a settled owner
+  entity/ai/BurrowGoal.java   find bedding and disappear under it
   race/RaceManager.java       pegged lures and the races in progress
   race/WhippetRace.java       line-up, countdown, finish times, results
   item/WhippetWhistleItem.java
   item/WhippetLureItem.java
 src/client/java/dev/whippet/whippets/client/
-  WhippetEntityModel.java     the model, and the trot / gallop / sit poses
+  WhippetEntityModel.java     the model, and the trot / gallop / sit / curl poses
   WhippetEntityRenderer.java  renderer, render state and the collar layer
 src/main/resources/            fabric.mod.json, textures, lang, loot table, tag, recipe
 tools/generate_textures.py     draws every PNG in the mod

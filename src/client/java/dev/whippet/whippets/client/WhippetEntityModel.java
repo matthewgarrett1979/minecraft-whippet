@@ -111,7 +111,9 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		float limbSwing = state.limbSwingAnimationProgress;
 		float limbAmplitude = state.limbSwingAmplitude;
 
-		if (state.inSittingPose) {
+		if (state.curled) {
+			this.curl();
+		} else if (state.inSittingPose) {
 			this.sit();
 		} else {
 			if (state.zooming) {
@@ -128,8 +130,10 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 			this.realTail.roll = MathHelper.sin(limbSwing * 0.3F) * 0.15F;
 		}
 
-		this.head.pitch = this.head.pitch + state.pitch * (float)(Math.PI / 180.0) + state.tuckProgress * 0.25F;
-		this.head.yaw = state.relativeHeadYaw * (float)(Math.PI / 180.0);
+		if (!state.curled) {
+			this.head.pitch = this.head.pitch + state.pitch * (float)(Math.PI / 180.0) + state.tuckProgress * 0.25F;
+			this.head.yaw = state.relativeHeadYaw * (float)(Math.PI / 180.0);
+		}
 	}
 
 	/** An easy trot: diagonal pairs, low amplitude, almost no body movement. */
@@ -158,6 +162,46 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 		this.leftHindLeg.pitch = hind - 0.25F;
 		this.body.pitch = MathHelper.sin(phase) * 0.12F;
 		this.body.originY = 11.5F + MathHelper.cos(phase * 2.0F) * 0.6F;
+	}
+
+	/**
+	 * Curled: flat on the floor, legs folded under, head round on its own flank
+	 * and the tail over the nose. This is the shape a whippet holds for hours.
+	 */
+	private void curl() {
+		// Flat out, brisket on the floor.
+		this.body.pitch = 0.0F;
+		this.body.originY = 20.8F;
+		this.body.originZ = 0.5F;
+		// Neck down off the front of the chest so the chin lands on the ground.
+		this.neck.pitch = 0.9F;
+		this.neck.yaw = 0.25F;
+		this.neck.originY = 19.6F;
+		this.neck.originZ = -4.3F;
+		this.head.originY = 22.4F;
+		this.head.originZ = -7.2F;
+		this.head.pitch = 0.25F;
+		this.head.yaw = 0.5F;
+		this.head.roll = 0.0F;
+		// Legs folded away under the body, out of sight where they belong.
+		this.rightFrontLeg.pitch = 1.6F;
+		this.leftFrontLeg.pitch = 1.6F;
+		this.rightFrontLeg.originY = 22.6F;
+		this.leftFrontLeg.originY = 22.6F;
+		this.rightFrontLeg.originZ = -3.5F;
+		this.leftFrontLeg.originZ = -3.5F;
+		this.rightHindLeg.pitch = (float)(Math.PI * 1.5);
+		this.leftHindLeg.pitch = (float)(Math.PI * 1.5);
+		this.rightHindLeg.originY = 22.6F;
+		this.leftHindLeg.originY = 22.6F;
+		this.rightHindLeg.originZ = 4.0F;
+		this.leftHindLeg.originZ = 4.0F;
+		// Tail round the outside, the way it always ends up.
+		this.tail.pitch = 1.6F;
+		this.tail.yaw = 1.3F;
+		this.tail.originY = 22.6F;
+		this.tail.originZ = 4.5F;
+		this.realTail.roll = 0.0F;
 	}
 
 	/**

@@ -42,6 +42,7 @@ public class WhippetWhistleItem extends Item {
 			for (WhippetEntity whippet : pack) {
 				whippet.setSitting(false);
 				whippet.setInSittingPose(false);
+				whippet.clearComfort();
 				whippet.setZooming(false);
 				whippet.setTarget(null);
 				whippet.getNavigation().stop();

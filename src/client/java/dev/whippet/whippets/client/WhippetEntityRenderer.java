@@ -21,6 +21,25 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 	}
 
 	@Override
+	public void render(
+		WhippetEntityRenderState state,
+		net.minecraft.client.util.math.MatrixStack matrices,
+		net.minecraft.client.render.command.OrderedRenderCommandQueue queue,
+		net.minecraft.client.render.state.CameraRenderState camera
+	) {
+		if (state.burrowed) {
+			// Down into the bedding, so only a nose and a lump are showing.
+			matrices.push();
+			matrices.translate(0.0F, -0.32F, 0.0F);
+			super.render(state, matrices, queue, camera);
+			matrices.pop();
+			return;
+		}
+
+		super.render(state, matrices, queue, camera);
+	}
+
+	@Override
 	public Identifier getTexture(WhippetEntityRenderState state) {
 		return state.texture;
 	}
@@ -40,6 +59,8 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 		state.texture = isNamedBonnie(whippet) ? WhippetCoat.BONNIE.getTexture() : whippet.getTextureId();
 		state.inSittingPose = whippet.isInSittingPose();
 		state.zooming = whippet.isZooming();
+		state.curled = whippet.isCurled();
+		state.burrowed = whippet.isBurrowed();
 		state.tailAngle = whippet.getTailAngle();
 		state.tuckProgress = whippet.getTuckProgress(tickProgress);
 		state.collarColor = whippet.isTamed() ? whippet.getCollarColor() : null;

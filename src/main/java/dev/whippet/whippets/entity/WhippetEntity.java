@@ -3,6 +3,8 @@ package dev.whippet.whippets.entity;
 import dev.whippet.whippets.ModEntities;
 import dev.whippet.whippets.ModTags;
 import dev.whippet.whippets.Whippets;
+import dev.whippet.whippets.entity.ai.BurrowGoal;
+import dev.whippet.whippets.entity.ai.CuddleGoal;
 import dev.whippet.whippets.entity.ai.RaceGoal;
 import dev.whippet.whippets.entity.ai.ZoomiesGoal;
 import net.minecraft.block.BlockState;
@@ -41,6 +43,7 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.WolfSoundVariant;
 import net.minecraft.entity.passive.WolfSoundVariants;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.DyeItem;
 import net.minecraft.item.Item;
@@ -74,6 +77,8 @@ public class WhippetEntity extends TameableEntity {
 	private static final TrackedData<Integer> COAT = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Integer> COLLAR_COLOR = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Boolean> ZOOMING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	private static final TrackedData<Boolean> CURLED = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	private static final TrackedData<Boolean> BURROWED = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
 	public static final Identifier ZOOMIES_SPEED_MODIFIER_ID = Whippets.id("zoomies");
 	private static final EntityAttributeModifier ZOOMIES_SPEED_MODIFIER = new EntityAttributeModifier(
@@ -83,6 +88,8 @@ public class WhippetEntity extends TameableEntity {
 	private static final float WILD_MAX_HEALTH = 14.0F;
 	private static final float TAMED_MAX_HEALTH = 24.0F;
 	private static final DyeColor DEFAULT_COLLAR_COLOR = DyeColor.LIGHT_BLUE;
+	/** Ticks under the covers before a whippet counts as warm again. */
+	private static final int WARMED_THROUGH = 2400;
 	/** Whippets are quiet dogs that sigh a lot, so they borrow the sad wolf's voice. */
 	private static final WolfSoundVariant SOUNDS = SoundEvents.WOLF_SOUNDS.get(WolfSoundVariants.Type.SAD);
 	/** Sighthounds run by sight: rabbits and chickens are the whole job description. */
@@ -98,6 +105,8 @@ public class WhippetEntity extends TameableEntity {
 	private boolean inTraps;
 	private int reactionTicks;
 	private boolean zoomiesRequested;
+	/** How thoroughly tucked up this dog is; it will not come out until it is warm. */
+	private int warmth;
 	/** This dog's form: a lasting edge or handicap over a racing distance. */
 	private float pace = 1.0F;
 
@@ -127,14 +136,16 @@ public class WhippetEntity extends TameableEntity {
 		this.goalSelector.add(1, new TameableEntity.TameableEscapeDangerGoal(1.6, DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES));
 		this.goalSelector.add(2, new SitGoal(this));
 		this.goalSelector.add(3, new ZoomiesGoal(this));
-		this.goalSelector.add(4, new PounceAtTargetGoal(this, 0.45F));
-		this.goalSelector.add(5, new MeleeAttackGoal(this, 1.3, true));
-		this.goalSelector.add(6, new FollowOwnerGoal(this, 1.35, 10.0F, 2.0F));
-		this.goalSelector.add(7, new AnimalMateGoal(this, 1.0));
-		this.goalSelector.add(8, new TemptGoal(this, 1.15, stack -> stack.isIn(ModTags.WHIPPET_FOOD), false));
-		this.goalSelector.add(9, new WanderAroundFarGoal(this, 1.0));
-		this.goalSelector.add(10, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-		this.goalSelector.add(10, new LookAroundGoal(this));
+		this.goalSelector.add(4, new BurrowGoal(this));
+		this.goalSelector.add(5, new CuddleGoal(this));
+		this.goalSelector.add(6, new PounceAtTargetGoal(this, 0.45F));
+		this.goalSelector.add(7, new MeleeAttackGoal(this, 1.3, true));
+		this.goalSelector.add(8, new FollowOwnerGoal(this, 1.35, 10.0F, 2.0F));
+		this.goalSelector.add(9, new AnimalMateGoal(this, 1.0));
+		this.goalSelector.add(10, new TemptGoal(this, 1.15, stack -> stack.isIn(ModTags.WHIPPET_FOOD), false));
+		this.goalSelector.add(11, new WanderAroundFarGoal(this, 1.0));
+		this.goalSelector.add(12, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+		this.goalSelector.add(12, new LookAroundGoal(this));
 		this.targetSelector.add(1, new TrackOwnerAttackerGoal(this));
 		this.targetSelector.add(2, new AttackWithOwnerGoal(this));
 		this.targetSelector.add(3, new RevengeGoal(this).setGroupRevenge());
@@ -147,6 +158,8 @@ public class WhippetEntity extends TameableEntity {
 		builder.add(COAT, WhippetCoat.FAWN.getId());
 		builder.add(COLLAR_COLOR, DEFAULT_COLLAR_COLOR.getIndex());
 		builder.add(ZOOMING, false);
+		builder.add(CURLED, false);
+		builder.add(BURROWED, false);
 	}
 
 	@Override
@@ -269,6 +282,67 @@ public class WhippetEntity extends TameableEntity {
 		boolean requested = this.zoomiesRequested;
 		this.zoomiesRequested = false;
 		return requested;
+	}
+
+	public boolean isCurled() {
+		return this.dataTracker.get(CURLED);
+	}
+
+	public void setCurled(boolean curled) {
+		this.dataTracker.set(CURLED, curled);
+	}
+
+	public boolean isBurrowed() {
+		return this.dataTracker.get(BURROWED);
+	}
+
+	public void setBurrowed(boolean burrowed) {
+		this.dataTracker.set(BURROWED, burrowed);
+	}
+
+	/** Climbs into the bedding and vanishes under it. */
+	public void burrowInto(BlockPos bedding) {
+		this.navigation.stop();
+		// Sits on the bedding; the renderer drops it the rest of the way under.
+		this.refreshPositionAndAngles(bedding.getX() + 0.5, bedding.getY() + 0.5625, bedding.getZ() + 0.5, this.getYaw(), 0.0F);
+		this.setVelocity(Vec3d.ZERO);
+		this.setBurrowed(true);
+		this.setCurled(true);
+	}
+
+	/** Gets a whippet out from under the covers and off your lap. */
+	public void clearComfort() {
+		this.setBurrowed(false);
+		this.setCurled(false);
+	}
+
+	/**
+	 * A whippet is only interested in the duvet when it is cold, or when the
+	 * world is: rain, snow, a cold biome or simply night.
+	 */
+	public boolean wantsToBurrow() {
+		if (this.isBurrowed()) {
+			// Stays put until it has warmed through, and stays in all night regardless.
+			return this.warmth < WARMED_THROUGH || this.isWeatherCold() || this.getEntityWorld().isNight();
+		}
+
+		return this.isWeatherCold() || this.getEntityWorld().isNight();
+	}
+
+	/**
+	 * Being tucked up warms the dog through, and anything it is curled against
+	 * gets the benefit too: a whippet on your lap thaws you out.
+	 */
+	public void warmUp(@Nullable LivingEntity sharing) {
+		this.warmth = Math.min(WARMED_THROUGH + 200, this.warmth + 1);
+
+		if (this.warmth % 40 == 0 && this.getHealth() < this.getMaxHealth()) {
+			this.heal(1.0F);
+		}
+
+		if (sharing != null && sharing.getFrozenTicks() > 0) {
+			sharing.setFrozenTicks(Math.max(0, sharing.getFrozenTicks() - 4));
+		}
 	}
 
 	public boolean isZooming() {
@@ -411,6 +485,16 @@ public class WhippetEntity extends TameableEntity {
 	public void tickMovement() {
 		super.tickMovement();
 
+		if (!this.isSheltered() && this.warmth > 0) {
+			this.warmth--;
+		}
+
+		if (this.isBurrowed()) {
+			// Under a duvet nothing much happens, which is the point.
+			this.setVelocity(Vec3d.ZERO);
+			this.navigation.stop();
+		}
+
 		if (this.getEntityWorld() instanceof ServerWorld world && this.isZooming() && this.isOnGround() && this.age % 3 == 0) {
 			world.spawnParticles(
 				ParticleTypes.CLOUD, this.getX(), this.getY() + 0.05, this.getZ(), 1, 0.1, 0.0, 0.1, 0.01
@@ -420,7 +504,17 @@ public class WhippetEntity extends TameableEntity {
 
 	/** Thin coat, no body fat: whippets shiver in snow and rain long before a wolf would. */
 	public boolean isCold() {
-		return this.isTouchingWaterOrRain() || this.getEntityWorld().getBiome(this.getBlockPos()).value().isCold(this.getBlockPos(), this.getEntityWorld().getSeaLevel());
+		return !this.isSheltered() && this.isWeatherCold();
+	}
+
+	private boolean isWeatherCold() {
+		return this.isTouchingWaterOrRain()
+			|| this.getEntityWorld().getBiome(this.getBlockPos()).value().isCold(this.getBlockPos(), this.getEntityWorld().getSeaLevel());
+	}
+
+	/** Under the covers or pressed against somebody: either way, warm. */
+	public boolean isSheltered() {
+		return this.isBurrowed() || this.isCurled();
 	}
 
 	public float getTuckProgress(float tickProgress) {

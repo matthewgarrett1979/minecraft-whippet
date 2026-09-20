@@ -9,6 +9,8 @@ public class WhippetEntityRenderState extends LivingEntityRenderState {
 	public Identifier texture = net.minecraft.util.Identifier.ofVanilla("textures/entity/wolf/wolf.png");
 	public boolean inSittingPose;
 	public boolean zooming;
+	public boolean curled;
+	public boolean burrowed;
 	public float tailAngle;
 	public float tuckProgress;
 	public @Nullable DyeColor collarColor;
