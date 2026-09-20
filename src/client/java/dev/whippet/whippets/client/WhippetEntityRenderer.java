@@ -60,6 +60,7 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 		state.inSittingPose = whippet.isInSittingPose();
 		state.zooming = whippet.isZooming();
 		state.curled = whippet.isCurled();
+		state.begProgress = whippet.getBegProgress(tickProgress);
 		state.burrowed = whippet.isBurrowed();
 		state.tailAngle = whippet.getTailAngle();
 		state.tuckProgress = whippet.getTuckProgress(tickProgress);

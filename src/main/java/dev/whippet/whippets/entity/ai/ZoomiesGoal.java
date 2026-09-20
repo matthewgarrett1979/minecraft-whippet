@@ -5,8 +5,6 @@ import java.util.EnumSet;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.entity.passive.WolfSoundVariants;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.jspecify.annotations.Nullable;
@@ -120,7 +118,7 @@ public class ZoomiesGoal extends Goal {
 				this.whippet.setZooming(false);
 				this.whippet.getNavigation().stop();
 				this.whippet.setInSittingPose(true);
-				this.whippet.playSound(SoundEvents.WOLF_SOUNDS.get(WolfSoundVariants.Type.SAD).whineSound().value(), 0.25F, 1.5F);
+				this.whippet.whine();
 			}
 		} else if (this.flopTicks > 0) {
 			this.flopTicks--;

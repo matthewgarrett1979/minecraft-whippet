@@ -10,6 +10,7 @@ public class WhippetEntityRenderState extends LivingEntityRenderState {
 	public boolean inSittingPose;
 	public boolean zooming;
 	public boolean curled;
+	public float begProgress;
 	public boolean burrowed;
 	public float tailAngle;
 	public float tuckProgress;

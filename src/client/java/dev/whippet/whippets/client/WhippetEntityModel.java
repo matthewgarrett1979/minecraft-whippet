@@ -134,6 +134,13 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 			this.head.pitch = this.head.pitch + state.pitch * (float)(Math.PI / 180.0) + state.tuckProgress * 0.25F;
 			this.head.yaw = state.relativeHeadYaw * (float)(Math.PI / 180.0);
 		}
+
+		// Begging: head over on one side, which is the whole trick.
+		if (state.begProgress > 0.001F) {
+			this.realHead.roll = state.begProgress * 0.55F;
+			this.head.pitch -= state.begProgress * 0.18F;
+			this.neck.pitch -= state.begProgress * 0.25F;
+		}
 	}
 
 	/** An easy trot: diagonal pairs, low amplitude, almost no body movement. */

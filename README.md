@@ -30,7 +30,12 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
 - **Sighthound instinct.** Untamed whippets hunt rabbits and chickens on sight.
 - **Thin-skinned.** They will not path through powder snow, they avoid water,
   and in cold or wet weather they tuck up and curl their tail under.
-- **Quiet.** They borrow the sad wolf's voice, which is mostly sighing.
+- **Not quiet.** A whippet whines, and this one whines about things: at you
+  while you hold food, at being told to stay while you walk off, at being left
+  on a lead, and at being cold with nowhere to get under. It sighs, once and
+  heavily, the moment it finally settles against you. It has the small dog's
+  panting and muttering and the sad dog's whine, pitched up because it is a
+  narrow little animal — puppies higher still.
 
 **Taming and care** — feed a wild whippet any meat from the `#whippets:whippet_food`
 tag (rabbit, chicken, mutton or beef, raw or cooked); like a wolf it takes on
@@ -47,6 +52,10 @@ white blaze down the muzzle, white throat and chest, four white feet and a fine
 brindle over a warm fawn. No whippet is ever born in it. Call one `Bonnie` with
 a name tag and she wears it whatever she was born in, the way a rabbit named
 Toast does, and she goes back to her own colours if you rename her.
+
+**Begging** — hold anything from the food tag and every whippet in earshot
+comes and stands in front of you with its head tilted over, whining at intervals
+until you either feed it or put the food away. The head tilt is the point.
 
 **Comfort** — whippets are heat-seeking. Sit still, sneak or go to sleep
 anywhere near one of yours and it will come over, press itself against you and
@@ -113,13 +122,14 @@ src/main/java/dev/whippet/whippets/
   entity/ai/ZoomiesGoal.java  run laps, then flop
   entity/ai/RaceGoal.java     hold in the traps, then run at the lure
   entity/ai/CuddleGoal.java   come over and lean on a settled owner
+  entity/ai/BegGoal.java      head-tilt and whine at anyone holding food
   entity/ai/BurrowGoal.java   find bedding and disappear under it
   race/RaceManager.java       pegged lures and the races in progress
   race/WhippetRace.java       line-up, countdown, finish times, results
   item/WhippetWhistleItem.java
   item/WhippetLureItem.java
 src/client/java/dev/whippet/whippets/client/
-  WhippetEntityModel.java     the model, and the trot / gallop / sit / curl poses
+  WhippetEntityModel.java     the model, the trot / gallop / sit / curl poses, the head tilt
   WhippetEntityRenderer.java  renderer, render state and the collar layer
 src/main/resources/            fabric.mod.json, textures, lang, loot table, tag, recipe
 tools/generate_textures.py     draws every PNG in the mod

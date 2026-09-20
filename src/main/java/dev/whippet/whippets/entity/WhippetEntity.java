@@ -3,6 +3,7 @@ package dev.whippet.whippets.entity;
 import dev.whippet.whippets.ModEntities;
 import dev.whippet.whippets.ModTags;
 import dev.whippet.whippets.Whippets;
+import dev.whippet.whippets.entity.ai.BegGoal;
 import dev.whippet.whippets.entity.ai.BurrowGoal;
 import dev.whippet.whippets.entity.ai.CuddleGoal;
 import dev.whippet.whippets.entity.ai.RaceGoal;
@@ -79,6 +80,7 @@ public class WhippetEntity extends TameableEntity {
 	private static final TrackedData<Boolean> ZOOMING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> CURLED = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> BURROWED = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	private static final TrackedData<Boolean> BEGGING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
 	public static final Identifier ZOOMIES_SPEED_MODIFIER_ID = Whippets.id("zoomies");
 	private static final EntityAttributeModifier ZOOMIES_SPEED_MODIFIER = new EntityAttributeModifier(
@@ -90,8 +92,14 @@ public class WhippetEntity extends TameableEntity {
 	private static final DyeColor DEFAULT_COLLAR_COLOR = DyeColor.LIGHT_BLUE;
 	/** Ticks under the covers before a whippet counts as warm again. */
 	private static final int WARMED_THROUGH = 2400;
-	/** Whippets are quiet dogs that sigh a lot, so they borrow the sad wolf's voice. */
-	private static final WolfSoundVariant SOUNDS = SoundEvents.WOLF_SOUNDS.get(WolfSoundVariants.Type.SAD);
+	/**
+	 * A whippet's voice: the small dog's panting and muttering, and the sad dog's
+	 * whine, which is the noise they actually make most of the time.
+	 */
+	private static final WolfSoundVariant VOICE = SoundEvents.WOLF_SOUNDS.get(WolfSoundVariants.Type.CUTE);
+	private static final WolfSoundVariant WHINGE = SoundEvents.WOLF_SOUNDS.get(WolfSoundVariants.Type.SAD);
+	/** Ticks between whines, so they nag rather than drone. */
+	private static final int WHINE_COOLDOWN = 60;
 	/** Sighthounds run by sight: rabbits and chickens are the whole job description. */
 	public static final TargetPredicate.EntityPredicate PREY_PREDICATE = (entity, world) -> {
 		EntityType<?> type = entity.getType();
@@ -107,6 +115,11 @@ public class WhippetEntity extends TameableEntity {
 	private boolean zoomiesRequested;
 	/** How thoroughly tucked up this dog is; it will not come out until it is warm. */
 	private int warmth;
+	private int whineCooldown;
+	private int nagCooldown;
+	private float begProgress;
+	private float lastBegProgress;
+	private boolean settledSigh;
 	/** This dog's form: a lasting edge or handicap over a racing distance. */
 	private float pace = 1.0F;
 
@@ -138,6 +151,7 @@ public class WhippetEntity extends TameableEntity {
 		this.goalSelector.add(3, new ZoomiesGoal(this));
 		this.goalSelector.add(4, new BurrowGoal(this));
 		this.goalSelector.add(5, new CuddleGoal(this));
+		this.goalSelector.add(5, new BegGoal(this));
 		this.goalSelector.add(6, new PounceAtTargetGoal(this, 0.45F));
 		this.goalSelector.add(7, new MeleeAttackGoal(this, 1.3, true));
 		this.goalSelector.add(8, new FollowOwnerGoal(this, 1.35, 10.0F, 2.0F));
@@ -160,6 +174,7 @@ public class WhippetEntity extends TameableEntity {
 		builder.add(ZOOMING, false);
 		builder.add(CURLED, false);
 		builder.add(BURROWED, false);
+		builder.add(BEGGING, false);
 	}
 
 	@Override
@@ -282,6 +297,33 @@ public class WhippetEntity extends TameableEntity {
 		boolean requested = this.zoomiesRequested;
 		this.zoomiesRequested = false;
 		return requested;
+	}
+
+	public boolean isBegging() {
+		return this.dataTracker.get(BEGGING);
+	}
+
+	public void setBegging(boolean begging) {
+		this.dataTracker.set(BEGGING, begging);
+	}
+
+	public float getBegProgress(float tickProgress) {
+		return MathHelper.lerp(tickProgress, this.lastBegProgress, this.begProgress);
+	}
+
+	/** The noise. Rate-limited, because even a whippet has to breathe. */
+	public void whine() {
+		if (this.whineCooldown > 0 || this.isSilent()) {
+			return;
+		}
+
+		this.whineCooldown = WHINE_COOLDOWN + this.random.nextInt(40);
+		this.playSound(WHINGE.whineSound().value(), this.getSoundVolume() * 1.1F, this.getSoundPitch());
+	}
+
+	/** The long-suffering sigh of a dog that has just got comfortable. */
+	private void sigh() {
+		this.playSound(WHINGE.whineSound().value(), this.getSoundVolume() * 0.7F, 0.75F + this.random.nextFloat() * 0.1F);
 	}
 
 	public boolean isCurled() {
@@ -478,12 +520,24 @@ public class WhippetEntity extends TameableEntity {
 			this.lastTuckProgress = this.tuckProgress;
 			float target = this.isCold() ? 1.0F : 0.0F;
 			this.tuckProgress = this.tuckProgress + (target - this.tuckProgress) * 0.1F;
+
+			this.lastBegProgress = this.begProgress;
+			float begTarget = this.isBegging() ? 1.0F : 0.0F;
+			this.begProgress = this.begProgress + (begTarget - this.begProgress) * 0.25F;
 		}
 	}
 
 	@Override
 	public void tickMovement() {
 		super.tickMovement();
+
+		if (this.whineCooldown > 0) {
+			this.whineCooldown--;
+		}
+
+		if (!this.getEntityWorld().isClient()) {
+			this.tickWhinging();
+		}
 
 		if (!this.isSheltered() && this.warmth > 0) {
 			this.warmth--;
@@ -499,6 +553,54 @@ public class WhippetEntity extends TameableEntity {
 			world.spawnParticles(
 				ParticleTypes.CLOUD, this.getX(), this.getY() + 0.05, this.getZ(), 1, 0.1, 0.0, 0.1, 0.01
 			);
+		}
+	}
+
+	/**
+	 * The running commentary. A whippet whines when it is shut out of something
+	 * it wants: left behind, told to stay, or cold and unable to find a duvet.
+	 * It also sighs once, heavily, the moment it finally settles against you.
+	 */
+	private void tickWhinging() {
+		if (this.isCurled()) {
+			if (!this.settledSigh) {
+				this.settledSigh = true;
+				this.sigh();
+			}
+
+			return;
+		}
+
+		this.settledSigh = false;
+
+		if (this.nagCooldown > 0) {
+			this.nagCooldown--;
+			return;
+		}
+
+		if (!this.isTamed() || this.isBurrowed() || this.isRacing()) {
+			return;
+		}
+
+		this.nagCooldown = 100 + this.random.nextInt(140);
+		LivingEntity owner = this.getOwner();
+
+		// A whippet that can simply follow you does; the noise starts when it
+		// cannot — told to stay, or on a lead — and you walk off anyway.
+		boolean stuck = this.isSitting() || this.isLeashed();
+
+		if (stuck && owner != null && owner.isAlive() && owner.getEntityWorld() == this.getEntityWorld()) {
+			double distance = this.squaredDistanceTo(owner);
+
+			if (distance > 6.0 * 6.0 && distance < 48.0 * 48.0) {
+				this.whine();
+				return;
+			}
+		}
+
+		// Cold, wet, and nowhere to get under.
+		if (this.isCold() && this.random.nextInt(3) == 0) {
+			this.whine();
 		}
 	}
 
@@ -554,27 +656,40 @@ public class WhippetEntity extends TameableEntity {
 	@Override
 	protected @Nullable SoundEvent getAmbientSound() {
 		if (this.isZooming()) {
-			return SOUNDS.pantSound().value();
-		} else if (this.isTamed() && this.getHealth() < this.getMaxHealth() * 0.5F) {
-			return SOUNDS.whineSound().value();
+			return VOICE.pantSound().value();
+		} else if (this.isBegging() || this.isTamed() && this.getHealth() < this.getMaxHealth() * 0.5F) {
+			return WHINGE.whineSound().value();
 		}
 
-		return this.random.nextInt(3) == 0 ? SOUNDS.pantSound().value() : SOUNDS.ambientSound().value();
+		return this.random.nextInt(3) == 0 ? VOICE.pantSound().value() : VOICE.ambientSound().value();
 	}
 
 	@Override
 	protected SoundEvent getHurtSound(DamageSource source) {
-		return SOUNDS.hurtSound().value();
+		return WHINGE.hurtSound().value();
 	}
 
 	@Override
 	protected SoundEvent getDeathSound() {
-		return SOUNDS.deathSound().value();
+		return WHINGE.deathSound().value();
 	}
 
 	@Override
 	protected float getSoundVolume() {
 		return 0.3F;
+	}
+
+	/** Small, narrow dog: everything it says comes out higher than a wolf. */
+	@Override
+	public float getSoundPitch() {
+		float pitch = this.isBaby() ? 1.6F : 1.25F;
+		return pitch + (this.random.nextFloat() - this.random.nextFloat()) * 0.15F;
+	}
+
+	@Override
+	public int getMinAmbientSoundDelay() {
+		// They are not quiet dogs so much as constantly muttering ones.
+		return 100;
 	}
 
 	@Override
