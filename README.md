@@ -15,10 +15,11 @@ periodically detonate into the zoomies.
 
 ## What it adds
 
-**The whippet** (`whippets:whippet`) — a tameable animal with six coats: fawn,
-brindle, blue, black, white (deliberately rare) and Bonnie's blue brindle. Coats
-are rolled on spawn, saved per dog, and inherited from one parent or the other
-when two whippets breed (with a one-in-ten throwback to a random coat).
+**The whippet** (`whippets:whippet`) — a tameable animal with five coats that
+turn up in the world: fawn, brindle, blue, black and white, the last of which is
+deliberately rare. Coats are rolled on spawn, saved per dog, and inherited from
+one parent or the other when two whippets breed (with a one-in-ten throwback to
+a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
 
 - **Fast.** Movement speed 0.38 against a wolf's 0.3, and it can clear a fence:
   higher jump strength and a longer safe fall distance than other animals.
@@ -43,8 +44,9 @@ and recalls the distant ones to you. Five-second cooldown.
 
 **Bonnie** — the blue brindle coat is drawn from a real whippet: silver face,
 white blaze down the muzzle, white throat and chest, four white feet and a fine
-brindle over a warm fawn. Call any whippet `Bonnie` with a name tag and she
-wears that coat whatever she was born in, the way a rabbit named Toast does.
+brindle over a warm fawn. No whippet is ever born in it. Call one `Bonnie` with
+a name tag and she wears it whatever she was born in, the way a rabbit named
+Toast does, and she goes back to her own colours if you rename her.
 
 **Where they live** — plains, sunflower plains, meadows, savanna and savanna
 plateau, in ones and twos.
