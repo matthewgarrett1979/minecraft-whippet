@@ -27,8 +27,26 @@ public class WhippetRace {
 	private static final int COUNTDOWN_TICKS = COUNTDOWN_STEP * 3;
 	/** A race is abandoned if nobody has finished by now. */
 	private static final int TIME_LIMIT_TICKS = 20 * 60;
-	/** How close a dog has to get to the lure to have caught it. */
-	private static final double FINISH_RADIUS = 2.0;
+	/**
+	 * A dog that has not got any closer to the lure in this long has stopped
+	 * racing, whatever it is doing, and is retired so the race can end rather
+	 * than stand there waiting on it.
+	 */
+	private static final int STOPPED_TRYING = 20 * 8;
+	/**
+	 * How close a dog has to get to the lure to have caught it. Wide enough that
+	 * a dog which has plainly arrived is not still trying to stand on exactly
+	 * the right block while the field goes past.
+	 */
+	private static final double FINISH_RADIUS = 2.5;
+	/**
+	 * How far above or below the lure still counts. Measured flat and generously
+	 * in height on purpose: pegged on top of a block, or on a bank, the lure can
+	 * sit a metre or two off the ground the dogs are running on, and a dog that
+	 * runs over the line without the race noticing turns round and tries again,
+	 * which is where the spinning came from.
+	 */
+	private static final double FINISH_HEIGHT = 3.0;
 	private static final double LANE_WIDTH = 1.6;
 
 	private final ServerPlayerEntity owner;
@@ -52,7 +70,7 @@ public class WhippetRace {
 
 		for (WhippetEntity whippet : pack) {
 			Vec3d lane = start.add(across.multiply(offset));
-			whippet.enterTraps(finish, lane, yaw);
+			whippet.enterTraps(finish, lane, start, yaw);
 			this.racers.add(new Racer(whippet));
 			offset += LANE_WIDTH;
 		}
@@ -85,11 +103,26 @@ public class WhippetRace {
 				continue;
 			}
 
-			anyRunning = true;
-
-			if (whippet.squaredDistanceTo(this.finish) <= FINISH_RADIUS * FINISH_RADIUS) {
+			if (this.hasCrossed(whippet)) {
 				this.finish(racer);
+				continue;
 			}
+
+			// Still going, or given up? Measured on its own best distance, so a
+			// dog stuck behind a tree drops out of the race instead of holding
+			// the result up for a minute.
+			double togo = this.flatDistance(whippet);
+
+			if (togo < racer.closest - 0.5) {
+				racer.closest = togo;
+				racer.stalledSince = this.ticks;
+			} else if (this.ticks - racer.stalledSince > STOPPED_TRYING) {
+				whippet.stopRacing();
+				racer.finishedAt = -1;
+				continue;
+			}
+
+			anyRunning = true;
 		}
 
 		if (!anyRunning || this.ticks > COUNTDOWN_TICKS + TIME_LIMIT_TICKS) {
@@ -98,6 +131,17 @@ public class WhippetRace {
 		}
 
 		return false;
+	}
+
+	/** Flat distance to the lure, with a generous allowance for height. */
+	private boolean hasCrossed(WhippetEntity whippet) {
+		return this.flatDistance(whippet) <= FINISH_RADIUS && Math.abs(whippet.getY() - this.finish.y) <= FINISH_HEIGHT;
+	}
+
+	private double flatDistance(WhippetEntity whippet) {
+		double dx = whippet.getX() - this.finish.x;
+		double dz = whippet.getZ() - this.finish.z;
+		return Math.sqrt(dx * dx + dz * dz);
 	}
 
 	private void countdown() {
@@ -165,6 +209,9 @@ public class WhippetRace {
 		private final WhippetEntity whippet;
 		/** Tick the dog crossed the line; -1 if it dropped out. */
 		private int finishedAt;
+		/** Its best distance to the lure so far, and when it last improved on it. */
+		private double closest = Double.MAX_VALUE;
+		private int stalledSince;
 
 		private Racer(WhippetEntity whippet) {
 			this.whippet = whippet;

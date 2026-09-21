@@ -7,6 +7,7 @@ import net.minecraft.client.render.entity.model.EntityModelLayer;
 public final class WhippetModelLayers {
 	public static final EntityModelLayer WHIPPET = new EntityModelLayer(Whippets.id("whippet"), "main");
 	public static final EntityModelLayer WHIPPET_BABY = new EntityModelLayer(Whippets.id("whippet_baby"), "main");
+	public static final EntityModelLayer WHIPPET_BALL = new EntityModelLayer(Whippets.id("whippet_ball"), "main");
 
 	public static final EntityModelLayer SQUIRREL = new EntityModelLayer(Whippets.id("squirrel"), "main");
 	public static final EntityModelLayer SQUIRREL_BABY = new EntityModelLayer(Whippets.id("squirrel_baby"), "main");

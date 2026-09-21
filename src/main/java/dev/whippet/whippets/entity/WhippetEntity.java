@@ -1,6 +1,7 @@
 package dev.whippet.whippets.entity;
 
 import dev.whippet.whippets.ModEntities;
+import dev.whippet.whippets.ModItems;
 import dev.whippet.whippets.ModSounds;
 import dev.whippet.whippets.ModTags;
 import dev.whippet.whippets.Whippets;
@@ -8,7 +9,9 @@ import dev.whippet.whippets.entity.ai.BarkUpTheTreeGoal;
 import dev.whippet.whippets.entity.ai.BegGoal;
 import dev.whippet.whippets.entity.ai.BurrowGoal;
 import dev.whippet.whippets.entity.ai.CuddleGoal;
+import dev.whippet.whippets.entity.ai.FetchGoal;
 import dev.whippet.whippets.entity.ai.GreetGoal;
+import dev.whippet.whippets.entity.ai.HuntCatsGoal;
 import dev.whippet.whippets.entity.ai.RaceGoal;
 import dev.whippet.whippets.entity.ai.SnootGoal;
 import dev.whippet.whippets.entity.ai.ZoomiesGoal;
@@ -18,6 +21,7 @@ import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -70,9 +74,9 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.Heightmap;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
@@ -91,6 +95,7 @@ public class WhippetEntity extends TameableEntity {
 	private static final TrackedData<Boolean> BEGGING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> SNOOTING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> TURBO = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	private static final TrackedData<Boolean> CARRYING_BALL = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
 	public static final Identifier ZOOMIES_SPEED_MODIFIER_ID = Whippets.id("zoomies");
 	private static final EntityAttributeModifier ZOOMIES_SPEED_MODIFIER = new EntityAttributeModifier(
@@ -121,6 +126,8 @@ public class WhippetEntity extends TameableEntity {
 	private static final double TOP_SPEED = 0.65;
 	/** What it is doing before the turbo comes in, so the wind-up has somewhere to start. */
 	private static final double CRUISING_SPEED = 0.3;
+	/** What a dog settles into out of the traps, before it makes its run. */
+	private static final double RACE_CRUISE = 0.45;
 	/**
 	 * What the ground takes back off a running animal each tick, measured rather
 	 * than looked up: a dog accelerating at a per tick settles at a/DRAG.
@@ -160,9 +167,11 @@ public class WhippetEntity extends TameableEntity {
 	/** How wound up a dog has to be before it stops reading the path and just goes. */
 	private static final float RUNS_BY_SIGHT_AT = 0.45F;
 	/** Inside this it is close enough to stop steering and start biting. */
-	private static final double CLOSE_ENOUGH = 2.0;
+	private static final double CLOSE_ENOUGH = 1.0;
 	/** How far ahead it looks for something it would rather not hit. */
 	private static final double LOOKS_AHEAD = 1.6;
+	/** Where to look for room on the start line, in blocks from the lane itself. */
+	private static final double[] TRAP_SHIFTS = {0.0, -1.0, 1.0, -2.0, 2.0};
 	/** How far off you can be, sprinting, and still have the dog come with you. */
 	private static final double KEEPS_UP_WITHIN = 24.0;
 
@@ -179,6 +188,10 @@ public class WhippetEntity extends TameableEntity {
 	private static final int SNOOT_TICKS = 10;
 	/** Ticks under the covers before a whippet counts as warm again. */
 	private static final int WARMED_THROUGH = 2400;
+	/** How far round a bed to look for somebody already asleep in it. */
+	private static final double BED_REACH = 2.2;
+	/** The hop out of the bed. */
+	private static final double LEAP_OUT = 0.42;
 	/**
 	 * A whippet's voice: the small dog's panting and muttering, and the sad dog's
 	 * whine, which is the noise they actually make most of the time.
@@ -199,8 +212,8 @@ public class WhippetEntity extends TameableEntity {
 		EntityType<?> type = entity.getType();
 		return type == EntityType.RABBIT || type == EntityType.CHICKEN;
 	};
-	/** What a whippet gets back for catching one, which is most of the appeal. */
-	private static final float SQUIRREL_IS_WORTH = 4.0F;
+	/** What a whippet gets back for catching something, which is most of the appeal. */
+	private static final float A_GOOD_CATCH = 4.0F;
 
 	private float tuckProgress;
 	private float lastTuckProgress;
@@ -222,6 +235,8 @@ public class WhippetEntity extends TameableEntity {
 	private float lastSnootProgress;
 	/** Ticks since this dog was last fed. */
 	private int hungerTicks;
+	/** The bedding this dog is on its way to, so no two head for the same one. */
+	private @Nullable BlockPos beddingClaim;
 	private int snootTicks;
 	private boolean settledSigh;
 	/** This dog's form: a lasting edge or handicap over a racing distance. */
@@ -261,22 +276,25 @@ public class WhippetEntity extends TameableEntity {
 		this.goalSelector.add(1, new SwimGoal(this));
 		this.goalSelector.add(1, new TameableEntity.TameableEscapeDangerGoal(1.6, DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES));
 		this.goalSelector.add(2, new SitGoal(this));
-		this.goalSelector.add(3, new ZoomiesGoal(this));
-		this.goalSelector.add(4, new BurrowGoal(this));
-		this.goalSelector.add(5, new CuddleGoal(this));
-		this.goalSelector.add(5, new BegGoal(this));
+		// A thrown ball outranks the zoomies, the duvet and everything under
+		// them, which is the correct order of things.
+		this.goalSelector.add(3, new FetchGoal(this));
+		this.goalSelector.add(4, new ZoomiesGoal(this));
+		this.goalSelector.add(5, new BurrowGoal(this));
+		this.goalSelector.add(6, new CuddleGoal(this));
+		this.goalSelector.add(6, new BegGoal(this));
 		// Hungry: go and put your nose against the back of their leg.
-		this.goalSelector.add(5, new SnootGoal(this));
-		this.goalSelector.add(6, new GreetGoal(this));
-		this.goalSelector.add(6, new PounceAtTargetGoal(this, 0.45F));
-		this.goalSelector.add(6, new BarkUpTheTreeGoal(this));
-		this.goalSelector.add(7, new MeleeAttackGoal(this, 1.3, true));
-		this.goalSelector.add(8, new FollowOwnerGoal(this, 1.35, 10.0F, 2.0F));
-		this.goalSelector.add(9, new AnimalMateGoal(this, 1.0));
-		this.goalSelector.add(10, new TemptGoal(this, 1.15, stack -> stack.isIn(ModTags.WHIPPET_FOOD), false));
-		this.goalSelector.add(11, new WanderAroundFarGoal(this, 1.0));
-		this.goalSelector.add(12, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-		this.goalSelector.add(12, new LookAroundGoal(this));
+		this.goalSelector.add(6, new SnootGoal(this));
+		this.goalSelector.add(7, new GreetGoal(this));
+		this.goalSelector.add(7, new PounceAtTargetGoal(this, 0.45F));
+		this.goalSelector.add(7, new BarkUpTheTreeGoal(this));
+		this.goalSelector.add(8, new MeleeAttackGoal(this, 1.3, true));
+		this.goalSelector.add(9, new FollowOwnerGoal(this, 1.35, 10.0F, 2.0F));
+		this.goalSelector.add(10, new AnimalMateGoal(this, 1.0));
+		this.goalSelector.add(11, new TemptGoal(this, 1.15, stack -> stack.isIn(ModTags.WHIPPET_FOOD), false));
+		this.goalSelector.add(12, new WanderAroundFarGoal(this, 1.0));
+		this.goalSelector.add(13, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+		this.goalSelector.add(13, new LookAroundGoal(this));
 		this.targetSelector.add(1, new TrackOwnerAttackerGoal(this));
 		this.targetSelector.add(2, new AttackWithOwnerGoal(this));
 		this.targetSelector.add(3, new RevengeGoal(this).setGroupRevenge());
@@ -285,6 +303,8 @@ public class WhippetEntity extends TameableEntity {
 		// tame or wild, sighthounds go after them. Only while the squirrel is
 		// still on the ground, though — once it is up the trunk the chase is
 		// over and the dog knows it, whatever it says about it afterwards.
+		// Cats. Every whippet within earshot comes in on it; see HuntCatsGoal.
+		this.targetSelector.add(4, new HuntCatsGoal(this));
 		this.targetSelector.add(5, new ActiveTargetGoal<>(this, SquirrelEntity.class, 10, true, false, (entity, world) -> {
 			return !this.isRacing() && !this.isInSittingPose() && entity instanceof SquirrelEntity squirrel && squirrel.isReachable(this.getY());
 		}));
@@ -301,6 +321,7 @@ public class WhippetEntity extends TameableEntity {
 		builder.add(BEGGING, false);
 		builder.add(SNOOTING, false);
 		builder.add(TURBO, false);
+		builder.add(CARRYING_BALL, false);
 	}
 
 	@Override
@@ -310,6 +331,7 @@ public class WhippetEntity extends TameableEntity {
 		view.putFloat("Pace", this.pace);
 		view.putInt("Hunger", this.hungerTicks);
 		view.putInt("Breath", this.breath);
+		view.putBoolean("Ball", this.isCarryingBall());
 		view.put("CollarColor", DyeColor.INDEX_CODEC, this.getCollarColor());
 	}
 
@@ -329,6 +351,7 @@ public class WhippetEntity extends TameableEntity {
 		this.pace = view.getFloat("Pace", 1.0F);
 		this.hungerTicks = view.getInt("Hunger", 0);
 		this.breath = view.getInt("Breath", LUNGS);
+		this.dataTracker.set(CARRYING_BALL, view.getBoolean("Ball", false));
 	}
 
 	@Override
@@ -356,12 +379,13 @@ public class WhippetEntity extends TameableEntity {
 
 	/**
 	 * A caught squirrel is eaten on the spot, and the dog is pleased with itself
-	 * for a while afterwards. Rabbits and chickens go the same way.
+	 * for a while afterwards. Rabbits, chickens and — to the horror of everyone
+	 * except the dog — cats go the same way.
 	 */
 	@Override
 	public boolean onKilledOther(ServerWorld world, LivingEntity other, DamageSource damageSource) {
-		if (other instanceof SquirrelEntity) {
-			this.heal(SQUIRREL_IS_WORTH);
+		if (other instanceof SquirrelEntity || HuntCatsGoal.isCat(other)) {
+			this.heal(A_GOOD_CATCH);
 			this.playSound(SoundEvents.ENTITY_FOX_EAT, 0.7F, this.getSoundPitch());
 			world.spawnParticles(
 				new net.minecraft.particle.ItemStackParticleEffect(ParticleTypes.ITEM, new ItemStack(Items.RABBIT)),
@@ -431,7 +455,7 @@ public class WhippetEntity extends TameableEntity {
 	}
 
 	/** Puts the dog on the start line: held facing the lure until the bell. */
-	public void enterTraps(Vec3d lure, Vec3d lane, float yaw) {
+	public void enterTraps(Vec3d lure, Vec3d lane, Vec3d startLine, float yaw) {
 		this.lurePos = lure;
 		this.inTraps = true;
 		this.setSitting(false);
@@ -441,13 +465,48 @@ public class WhippetEntity extends TameableEntity {
 		this.navigation.stop();
 
 		if (this.getEntityWorld() instanceof ServerWorld world) {
-			double y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, MathHelper.floor(lane.x), MathHelper.floor(lane.z));
-			this.teleport(world, lane.x, Math.min(y, lane.y + 4.0), lane.z, java.util.Set.of(), yaw, 0.0F, true);
+			Vec3d trap = this.findTrap(world, lane, startLine);
+			this.teleport(world, trap.x, trap.y, trap.z, java.util.Set.of(), yaw, 0.0F, true);
 		}
 
 		this.setYaw(yaw);
 		this.setBodyYaw(yaw);
 		this.setHeadYaw(yaw);
+	}
+
+	/**
+	 * Somewhere to stand on the line. Drawn across open grass a start line is
+	 * fine; drawn across a bank, a ditch or a spruce it is not, and a dog put
+	 * inside a tree trunk is not going to race anybody. Failing all of it, the
+	 * dog goes where the starter is standing, which is somewhere a body fits.
+	 */
+	private Vec3d findTrap(ServerWorld world, Vec3d lane, Vec3d startLine) {
+		// Its own lane first, then a stride either side of it, because a lane
+		// that lands in a bank or a pond is no use to the dog standing in it.
+		for (double shift : TRAP_SHIFTS) {
+			for (double swing : TRAP_SHIFTS) {
+				Vec3d spot = lane.add(shift, 0.0, swing);
+
+				for (int step = 3; step >= -4; step--) {
+					double y = lane.y + step;
+
+					if (this.roomToStand(world, BlockPos.ofFloored(spot.x, y, spot.z))) {
+						return new Vec3d(spot.x, y, spot.z);
+					}
+				}
+			}
+		}
+
+		return startLine;
+	}
+
+	/** Ground under it and two blocks of nothing above that. */
+	private boolean roomToStand(ServerWorld world, BlockPos feet) {
+		BlockPos below = feet.down();
+		BlockPos head = feet.up();
+		return !world.getBlockState(below).getCollisionShape(world, below).isEmpty()
+			&& world.getBlockState(feet).getCollisionShape(world, feet).isEmpty()
+			&& world.getBlockState(head).getCollisionShape(world, head).isEmpty();
 	}
 
 	public void leaveTraps() {
@@ -543,6 +602,40 @@ public class WhippetEntity extends TameableEntity {
 		return true;
 	}
 
+	/** Whether it has a ball in its mouth, which changes a whippet's whole day. */
+	public boolean isCarryingBall() {
+		return this.dataTracker.get(CARRYING_BALL);
+	}
+
+	/**
+	 * Takes the ball. One dog in four decides at this point that it is now its
+	 * ball and goes off round the field with it before any question of giving it
+	 * back arises, which is the correct and traditional behaviour.
+	 */
+	public void pickUpBall(ItemEntity ball) {
+		ball.discard();
+		this.dataTracker.set(CARRYING_BALL, true);
+		this.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 0.4F, 1.6F);
+	}
+
+	/** Gives it back, or at least puts it down, which is the same thing eventually. */
+	public void dropBall() {
+		if (!this.isCarryingBall()) {
+			return;
+		}
+
+		this.dataTracker.set(CARRYING_BALL, false);
+
+		if (this.getEntityWorld() instanceof ServerWorld world) {
+			ItemEntity ball = new ItemEntity(world, this.getX(), this.getY() + 0.2, this.getZ(), new ItemStack(ModItems.WHIPPET_BALL));
+			ball.setPickupDelay(10);
+			ball.setVelocity(this.getRotationVector().multiply(0.08).add(0.0, 0.08, 0.0));
+			world.spawnEntity(ball);
+		}
+
+		this.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 0.3F, 1.2F);
+	}
+
 	/** Whether there is anything left to spend. */
 	public boolean hasSomethingInTheTank() {
 		return !this.blown && this.breath > 0;
@@ -618,7 +711,10 @@ public class WhippetEntity extends TameableEntity {
 		// path is a chain of blocks with a corner at every one of them, and a
 		// dog going this fast overruns all of them and arrives having zig-zagged
 		// the whole way. Given a clear run it goes straight at the thing instead.
-		if (this.turboProgress > RUNS_BY_SIGHT_AT) {
+		// A racing dog runs by sight from the bell, not only when it goes flat
+		// out: the lure is a point it can see, and a block path to it through
+		// trees and banks is how a race turns into four dogs milling about.
+		if (this.turboProgress > RUNS_BY_SIGHT_AT || this.isRunningTheLine()) {
 			this.runBySight();
 		}
 	}
@@ -640,9 +736,12 @@ public class WhippetEntity extends TameableEntity {
 
 		Vec3d line = flat.multiply(1.0 / distance);
 
-		if (!this.clearRun(line)) {
-			// Something in the way: hand the steering back to the pathfinder,
-			// which is slower and knows about corners.
+		// Something in the way: hand the steering back to the pathfinder, which
+		// is slower and knows about corners. Unless the pathfinder has nothing
+		// either — at the foot of a bank it returns a path one node long that
+		// goes nowhere — in which case the dog pushes at it regardless, scrabbles
+		// and jumps, and looks like a dog rather than a statue.
+		if (!this.clearRun(line) && !this.navigation.isIdle()) {
 			return;
 		}
 
@@ -745,7 +844,13 @@ public class WhippetEntity extends TameableEntity {
 
 	/** How fast this dog should be going right now, in blocks a tick. */
 	private double topSpeedNow() {
-		return MathHelper.lerp(this.turboProgress, CRUISING_SPEED, TOP_SPEED) * this.pace;
+		double settled = this.isRunningTheLine() ? RACE_CRUISE : CRUISING_SPEED;
+		return MathHelper.lerp(this.turboProgress, settled, TOP_SPEED) * this.pace;
+	}
+
+	/** Racing, out of the traps and off the line: running, in other words. */
+	public boolean isRunningTheLine() {
+		return this.isRacing() && !this.inTraps && this.reactionTicks <= 0;
 	}
 
 	/**
@@ -924,6 +1029,52 @@ public class WhippetEntity extends TameableEntity {
 		this.setVelocity(Vec3d.ZERO);
 		this.setBurrowed(true);
 		this.setCurled(true);
+	}
+
+	/**
+	 * Says which bedding this dog is on its way to. Two whippets setting off for
+	 * the same bed and arriving together is how you end up with two whippets in
+	 * one bed, which is not a thing either of them would put up with.
+	 */
+	public void claimBedding(@Nullable BlockPos bedding) {
+		this.beddingClaim = bedding;
+	}
+
+	public @Nullable BlockPos getBeddingClaim() {
+		return this.beddingClaim;
+	}
+
+	/**
+	 * Turns whoever is in the bed out of it — you, or a villager who thought
+	 * they had found somewhere quiet. A whippet does not consider a sleeping
+	 * body an obstacle; it considers it warm, and in the way.
+	 */
+	public void turnOutSleeper(BlockPos bedding) {
+		Box bed = new Box(bedding).expand(BED_REACH);
+
+		for (LivingEntity sleeper : this.getEntityWorld().getEntitiesByClass(LivingEntity.class, bed, LivingEntity::isSleeping)) {
+			sleeper.wakeUp();
+			this.playSound(SoundEvents.ENTITY_FOX_SNIFF, this.getSoundVolume(), 1.1F);
+
+			if (sleeper instanceof PlayerEntity player) {
+				player.sendMessage(Text.translatable("entity.whippets.whippet.took_the_bed", this.getRaceName()), true);
+			}
+		}
+	}
+
+	/**
+	 * How a whippet leaves a bed: not a climb down, a departure. Straight up and
+	 * out, usually because it has heard something, and never for any reason you
+	 * are able to establish.
+	 */
+	public void jumpOut() {
+		this.setVelocity(
+			(this.random.nextDouble() - 0.5) * 0.25,
+			LEAP_OUT,
+			(this.random.nextDouble() - 0.5) * 0.25
+		);
+		this.velocityDirty = true;
+		this.playSound(SoundEvents.ENTITY_WOLF_SHAKE, this.getSoundVolume() * 0.8F, this.getSoundPitch());
 	}
 
 	/** Gets a whippet out from under the covers and off your lap. */
@@ -1113,6 +1264,13 @@ public class WhippetEntity extends TameableEntity {
 	}
 
 	@Override
+	public void onDeath(DamageSource source) {
+		// Whatever else is happening, the ball goes back into the world.
+		this.dropBall();
+		super.onDeath(source);
+	}
+
+	@Override
 	public void tick() {
 		super.tick();
 
@@ -1175,6 +1333,7 @@ public class WhippetEntity extends TameableEntity {
 
 		if (!this.getEntityWorld().isClient()) {
 			this.tickTurbo();
+
 		}
 
 		if (this.getEntityWorld() instanceof ServerWorld world && this.isZooming() && this.isOnGround() && this.age % 3 == 0) {

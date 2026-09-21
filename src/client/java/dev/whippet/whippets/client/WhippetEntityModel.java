@@ -195,6 +195,16 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 	}
 
 	/**
+	 * Moves the matrices to the end of the dog's nose, wherever the head has got
+	 * to this frame, so something can be rendered in its mouth.
+	 */
+	public void alignToMuzzle(net.minecraft.client.util.math.MatrixStack matrices) {
+		this.head.applyTransform(matrices);
+		this.realHead.applyTransform(matrices);
+		matrices.translate(0.0F, 0.05F, -0.40F);
+	}
+
+	/**
 	 * Puts a part where an adult whippet would carry it. A puppy is the same
 	 * model at half scale, so the distance from the part's home has to shrink
 	 * with it or the pose comes apart in the middle.

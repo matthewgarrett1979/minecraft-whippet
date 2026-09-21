@@ -79,6 +79,13 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
   kicking up dust as it goes, then flops down where it stopped and refuses to
   move for a few seconds.
 - **Sighthound instinct.** Untamed whippets hunt rabbits and chickens on sight.
+- **Cats.** There is no negotiating with a sighthound about a cat. It is not
+  dislike exactly — a cat is the right size, the right shape and the wrong
+  speed, and the dog's opinion is settled before it has thought about it. Tame
+  or wild, they go. What makes it worse is that they do it together: the first
+  one to see a cat honks, and every whippet within sixteen blocks comes in on
+  it. A caught cat is eaten, like everything else they catch, and is worth two
+  hearts. Ocelots count as cats and are treated exactly as badly.
 - **Thin-skinned.** They will not path through powder snow, they avoid water,
   and in cold or wet weather they tuck up and curl their tail under.
 - **Not quiet.** A whippet whines, and this one whines about things: at you
@@ -104,6 +111,20 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
   goose honk that was synthesised in her place first. Each dog honks on its own
   note, derived from its pace, and puppies honk higher. See
   [docs/sound.md](docs/sound.md).
+
+![A fawn whippet galloping flat out with a yellow-green ball in its mouth, turf flying behind it](docs/ball.png)
+
+**The ball** — craft one from a slime ball, white wool and yellow dye, and throw
+it with a right-click. It is the one thing a whippet will interrupt anything
+for: it goes after it flat out, catches up with it, picks it up, and carries it
+in its mouth, where you can see it.
+
+Then it mostly brings it back. Mostly. One throw in four the dog decides that
+this is now its ball, takes it off across the field and keeps it over there for
+six seconds before any question of giving it back arises — which is not a bug
+and is not going to be fixed. A ball lying at your feet is not interesting; it
+has to have been thrown. A dog carrying one drops it if it dies, so you never
+lose it for good.
 
 ![A fawn whippet at full stretch, airborne, clods of turf flying behind it, a squirrel on the horizon ahead of it](docs/turbo.png)
 
@@ -171,12 +192,26 @@ times as fast, so a whippet on your lap is powder-snow insurance.
 **Under the covers** — at night, in rain or snow, or in a cold biome, a whippet
 goes looking for bedding: a bed within ten blocks, or failing that any wool or
 carpet. It climbs in, disappears under the covers and leaves a lump and a paw
-showing. It stays until it has warmed through, and all night if it is night,
-healing slowly while it is in there, and it stops shivering as soon as it is
-tucked up. Blow the whistle if you want it out.
+showing, healing slowly while it is in there, and it stops shivering as soon as
+it is tucked up. Three house rules, all of them from life:
+
+- **One dog to a bed.** They do not share, and a whippet that finds another one
+  already in there goes and finds its own. Two of them setting off for the same
+  bed is handled as well — the first to want it has it.
+- **It does not care that you are in it.** If you are asleep in that bed you are
+  woken up and turned out, and it gets in. So is anybody else who was asleep in
+  it, villagers included.
+- **A minute at the outside.** It never stays long: up to sixty seconds, and
+  then it is suddenly and urgently somewhere else, out of the bed in one
+  movement and away, for reasons it does not explain. It will not go back for
+  half a minute or so.
+
+Blow the whistle if you want it out sooner.
 
 **Racing** — craft a lure from a stick, string and white wool. Right-click a
-block with it to peg the lure: that spot is the finish. Then stand where you
+block with it to peg the lure: that spot is the finish, and the lure drops to
+the ground under wherever you pegged it, so it is always standing on something
+the dogs can run to. Then stand where you
 want the start and right-click in the air. Every tamed whippet of yours within
 24 blocks is called to the line, teleported into lanes abreast facing the lure,
 and held there through a three-count — they cannot creep forward before the
@@ -197,6 +232,24 @@ from the traps at its own speed, and a slow break costs about half a second. On
 a short track the break decides the race; on a long one the better dog tells,
 which is the whole argument for running them over a proper distance. A pegged
 lure is remembered for the session, so peg it again after a restart.
+
+![A whippet track in open country by a lake: a dirt-path running surface between fenced rails with lanterns, a stone stand down one side, four traps and a clubhouse at the far end, two whippets standing on the track](docs/track.png)
+
+**The track** — somebody has built a whippet track out here, and it turns up in
+open country: plains, sunflower plains, meadow, savanna and savanna plateau,
+about one in every sixty chunks of it. Thirty-six blocks of run between two
+fenced rails with lanterns on the posts, four traps at one end, a lure on a
+gantry over the finish line, a stone stand down one side to shout from, and a
+clubhouse with a campfire, hay bales and a chest with the club's gear in it: a
+lure, a whistle, a ball, a lead, some bones and a couple of rabbits.
+
+There are whippets living on it. Two or three of them, and they do not wander
+off, and nobody knows whose they are.
+
+It levels its own ground, so it always comes out flat enough to run a race on,
+and it lays its running surface as path rather than dirt, which is why the grass
+that comes up everywhere else afterwards stops dead at the rails. Peg your own
+lure at the finish, stand at the traps and call them up.
 
 **Where they live** — plains, sunflower plains, meadows, savanna and savanna
 plateau, in ones and twos.
@@ -294,6 +347,9 @@ src/main/java/dev/whippet/whippets/
   entity/ai/SnootGoal.java    hungry: get behind them and tap the back of the leg
   entity/ai/GreetGoal.java    nose to nose with another whippet
   entity/ai/BarkUpTheTreeGoal.java     stand under the tree and complain
+  entity/ai/FetchGoal.java    go after the ball, and mostly bring it back
+  entity/ai/HuntCatsGoal.java  see a cat, tell the others, go
+  world/WhippetTrackFeature.java  the track, built block by block where the ground allows
   entity/ai/SquirrelFleeWhippetGoal.java  break for a trunk and go up it
   entity/ai/SquirrelTauntGoal.java     chatter at the dog from out of reach
   entity/ai/SquirrelStashGoal.java     steal it, carry it off, bury it
@@ -301,10 +357,12 @@ src/main/java/dev/whippet/whippets/
   race/WhippetRace.java       line-up, countdown, finish times, results
   item/WhippetWhistleItem.java
   item/WhippetLureItem.java
+  item/WhippetBallItem.java
 src/client/java/dev/whippet/whippets/client/
   WhippetEntityModel.java     the model, the trot / gallop / flat-out / sit / curl poses, the head tilt
   SquirrelEntityModel.java    the squirrel, its tail, and the bound / sit-up / climb poses
   WhippetEntityRenderer.java  renderer, render state and the collar layer
+  WhippetBallFeatureRenderer.java  the ball, in the mouth, where the dog put it
 src/main/resources/            fabric.mod.json, textures, lang, loot table, tag, recipe
 ```
 
@@ -341,6 +399,23 @@ overruns every corner of a block path and arrives having zig-zagged, covering
 less ground than a slower one. Hence running by sight, in `mobTick`, which
 overrides the path with a straight line at the quarry whenever the next stride
 and a half is clear, and hands the steering back the moment it is not.
+
+The track is built the same way as everything else here — in code, from a table
+of block positions, with no saved structure file — and it levels and foots its
+own site so it can be dropped on gently rolling ground without ending up on
+stilts. It is a placed feature rather than a structure, which means you cannot
+`/locate` it; `/place feature whippets:whippet_track` will put one wherever you
+are standing if you would rather not go looking.
+
+Racing needed three fixes to work on ground that is not a billiard table. A
+lure pegged on a ledge used to hang in the air where no dog could reach it, so
+the race could never end and the field milled about underneath it — it now
+drops to the ground, and the finish is measured flat with a generous allowance
+for height. Dogs ran to the lure along a block path, which at racing speed they
+overshot, so they now run at it by sight (the same machinery turbo uses) with
+the path as the fallback for when something is in the way. And a dog that is
+genuinely stuck — at the foot of a bank with no way round — now retires from
+the race after eight seconds rather than holding up the result.
 
 The honk is the exception to all of this: it is a recording of Bonnie, not
 generated at all. How it was cleaned and cut is in [docs/sound.md](docs/sound.md).

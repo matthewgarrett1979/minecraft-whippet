@@ -17,6 +17,7 @@ public class WhippetsClient implements ClientModInitializer {
 			WhippetModelLayers.WHIPPET_BABY,
 			() -> TexturedModelData.of(WhippetEntityModel.getModelData(Dilation.NONE), 64, 64).transform(WhippetEntityModel.BABY_TRANSFORMER)
 		);
+		EntityModelLayerRegistry.registerModelLayer(WhippetModelLayers.WHIPPET_BALL, WhippetBallFeatureRenderer::getModelData);
 		EntityRendererRegistry.register(ModEntities.WHIPPET, WhippetEntityRenderer::new);
 
 		EntityModelLayerRegistry.registerModelLayer(

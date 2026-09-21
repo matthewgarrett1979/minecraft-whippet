@@ -1,5 +1,6 @@
 package dev.whippet.whippets;
 
+import dev.whippet.whippets.item.WhippetBallItem;
 import dev.whippet.whippets.item.WhippetLureItem;
 import dev.whippet.whippets.item.WhippetWhistleItem;
 import java.util.function.Function;
@@ -21,6 +22,7 @@ public final class ModItems {
 	);
 	public static final Item WHIPPET_WHISTLE = register("whippet_whistle", WhippetWhistleItem::new, new Item.Settings().maxCount(1));
 	public static final Item WHIPPET_LURE = register("whippet_lure", WhippetLureItem::new, new Item.Settings().maxCount(1));
+	public static final Item WHIPPET_BALL = register("whippet_ball", WhippetBallItem::new, new Item.Settings().maxCount(1));
 
 	private ModItems() {
 	}
@@ -38,6 +40,7 @@ public final class ModItems {
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
 			entries.add(WHIPPET_WHISTLE);
 			entries.add(WHIPPET_LURE);
+			entries.add(WHIPPET_BALL);
 		});
 	}
 }

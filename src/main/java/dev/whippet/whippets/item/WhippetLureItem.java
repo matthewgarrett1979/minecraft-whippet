@@ -26,6 +26,8 @@ import net.minecraft.world.World;
  */
 public class WhippetLureItem extends Item {
 	private static final int COOLDOWN_TICKS = 40;
+	/** How far a pegged lure will fall looking for ground to sit on. */
+	private static final int MAX_DROP = 16;
 
 	public WhippetLureItem(Item.Settings settings) {
 		super(settings);
@@ -40,7 +42,7 @@ public class WhippetLureItem extends Item {
 		}
 
 		if (context.getWorld() instanceof ServerWorld world && player instanceof ServerPlayerEntity serverPlayer) {
-			BlockPos pos = context.getBlockPos().offset(context.getSide());
+			BlockPos pos = groundUnder(world, context.getBlockPos().offset(context.getSide()));
 			Vec3d lure = Vec3d.ofBottomCenter(pos);
 			RaceManager.setLure(serverPlayer, lure);
 			world.spawnParticles(ParticleTypes.END_ROD, lure.x, lure.y + 0.3, lure.z, 20, 0.2, 0.3, 0.2, 0.01);
@@ -49,6 +51,30 @@ public class WhippetLureItem extends Item {
 		}
 
 		return ActionResult.SUCCESS;
+	}
+
+	/**
+	 * Drops the lure to the ground under wherever it was pegged. Pegged on the
+	 * side of a ledge or a wall it would otherwise hang in the air, and a lure
+	 * the dogs cannot stand on is a race nobody can win: they arrive underneath
+	 * it, mill about and never finish. Standing on the ground it is on the same
+	 * level as the dogs running at it.
+	 */
+	private static BlockPos groundUnder(ServerWorld world, BlockPos pegged) {
+		BlockPos pos = pegged;
+
+		for (int drop = 0; drop < MAX_DROP; drop++) {
+			BlockPos below = pos.down();
+
+			if (!world.getBlockState(below).getCollisionShape(world, below).isEmpty()) {
+				return pos;
+			}
+
+			pos = below;
+		}
+
+		// Pegged over a ravine or the void: leave it where they put it.
+		return pegged;
 	}
 
 	@Override

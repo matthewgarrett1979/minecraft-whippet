@@ -18,6 +18,8 @@ public class WhippetEntityRenderState extends LivingEntityRenderState {
 	public float turboProgress;
 	/** Run out of breath: head down, tail down, and going nowhere fast. */
 	public boolean blown;
+	/** Ball in the mouth. */
+	public boolean carryingBall;
 	public boolean curled;
 	public float begProgress;
 	public float snootProgress;

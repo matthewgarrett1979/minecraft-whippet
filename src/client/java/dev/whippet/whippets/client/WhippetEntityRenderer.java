@@ -18,6 +18,7 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 			0.4F
 		);
 		this.addFeature(new WhippetCollarFeatureRenderer(this));
+		this.addFeature(new WhippetBallFeatureRenderer(this, context));
 	}
 
 	@Override
@@ -69,6 +70,7 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 		state.groundSpeed = Math.min((float)Math.sqrt(dx * dx + dz * dz), 1.2F);
 		state.turboProgress = whippet.getTurboProgress(tickProgress);
 		state.blown = whippet.isBlown();
+		state.carryingBall = whippet.isCarryingBall();
 		state.curled = whippet.isCurled();
 		state.begProgress = whippet.getBegProgress(tickProgress);
 		state.snootProgress = whippet.getSnootProgress(tickProgress);

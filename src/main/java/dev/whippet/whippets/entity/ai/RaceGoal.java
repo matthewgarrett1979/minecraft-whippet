@@ -18,8 +18,12 @@ public class RaceGoal extends Goal {
 	 * and there is nothing to watch.
 	 */
 	private static final double RACE_SPEED = 1.35;
-	/** Re-issue the path this often; navigation gives up on long straights. */
-	private static final int REPATH_INTERVAL = 20;
+	/**
+	 * Re-issue the path this often. The dog steers itself at the lure while it
+	 * has a clear run; this is the fallback for when it has not, so it has to
+	 * keep up with a dog that is moving.
+	 */
+	private static final int REPATH_INTERVAL = 8;
 	/** The earliest and latest a dog will make its run, as a share of the trip. */
 	private static final double EARLIEST_KICK = 0.25;
 	private static final double LATEST_KICK = 0.75;

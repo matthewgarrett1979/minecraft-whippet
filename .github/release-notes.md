@@ -1,6 +1,38 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.7.0: cats, a ball, and a track to race on.**
+
+**Cats.** There is no negotiating with a sighthound about a cat, and they do it
+together: the first dog to see one honks, every whippet within sixteen blocks
+comes in on it, and a caught cat is eaten like anything else they catch.
+Ocelots count.
+
+**A ball.** Craft one from a slime ball, white wool and yellow dye and throw it
+with a right-click. The dog goes flat out after it, picks it up, carries it in
+its mouth where you can see it, and mostly brings it back. One throw in four it
+decides the ball is now its own and takes it off across the field for a bit.
+
+**A whippet track, out in the world.** Somebody built one in open country —
+plains, meadow or savanna, about one in sixty chunks — and it is all there:
+thirty-six blocks of run between fenced rails with lanterns, four traps, a lure
+on a gantry over the line, a stand to shout from, and a clubhouse with a
+campfire and a chest of gear. Two or three whippets live on it. Nobody knows
+whose they are.
+
+**Racing actually works now.** It was badly broken on real ground: a lure pegged
+on a ledge hung in the air where no dog could reach it, so the race never ended
+and the dogs spun about at the line. The lure now drops to the ground, the
+finish is measured flat with room for height, the dogs run at it by sight
+instead of following a block path they overshoot, they are no longer parked
+inside a bank when they line up, and a dog that is genuinely stuck retires
+instead of holding the result up.
+
+**Bed manners.** One dog to a bed — they do not share. If you are asleep in it
+you are woken up and turned out, and so is anybody else who was. And it never
+stays long: a minute at the outside, and then it is out in one movement and
+away.
+
 **In 1.6.0: turbo.** A whippet has one thing nothing else in the overworld can
 answer, and now it uses it: given a reason it drops into the gallop and goes at
 thirteen blocks a second — twice a sprinting player, a shade over the fastest
@@ -90,7 +122,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.6.0.jar`** from the assets below in beside it.
+3. Put **`whippets-1.7.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
@@ -113,6 +145,9 @@ fed and takes a collar from any dye.
 **Zoomies.** Every minute or three it detonates: three or four laps at roughly
 double speed, thrown in wide arcs around you, kicking up dust — then it flops
 over where it stopped and refuses to move for a few seconds.
+
+**A ball and a track.** Throw the ball and it goes; find the track and race on
+it. Cats are not safe anywhere.
 
 **Turbo.** Thirteen blocks a second for six seconds, and then the dog is blown.
 It goes after quarry and when you sprint; crouch and right-click one, or crouch

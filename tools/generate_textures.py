@@ -651,6 +651,56 @@ def draw_lure() -> Image:
     )
 
 
+def draw_carried_ball() -> Image:
+    """The ball as the dog wears it: a 3-cube's worth of chewed tennis ball."""
+    image = Image(16, 16, (0, 0, 0, 0))
+    base = (186, 205, 74, 255)
+    shade = (152, 170, 58, 255)
+    seam = (233, 240, 206, 255)
+
+    for y in range(6):
+        for x in range(12):
+            image.set(x, y, base if (x + y) % 5 else shade)
+
+    # A seam curling over the top and down one side, as they are painted on.
+    for x in range(3, 9):
+        image.set(x, 0 if x % 2 else 1, seam)
+
+    for y in range(3, 6):
+        image.set(3 + (y % 2), y, seam)
+
+    return image
+
+
+def draw_ball() -> Image:
+    """The ball: a chewed tennis ball, seam and all, and slightly the worse for wear."""
+    return from_map(
+        [
+            "................",
+            "................",
+            "....########....",
+            "...##LLLLLL##...",
+            "..#LLLLLLLLLL#..",
+            ".#LLLSSLLLLLLL#.",
+            ".#LLSSLLLLLLLL#.",
+            "#LLLSLLLLLLSSLL#",
+            "#LLLSLLLLLSSLLL#",
+            ".#LLSLLLLSSLLL#.",
+            ".#LLLSSSSSLLLL#.",
+            "..#LLLLLLLLLL#..",
+            "...##LLLLLL##...",
+            "....########....",
+            "................",
+            "................",
+        ],
+        {
+            "#": (108, 122, 38, 255),
+            "L": (186, 205, 74, 255),
+            "S": (233, 240, 206, 255),
+        },
+    )
+
+
 def draw_icon() -> Image:
     """Mod icon: a whippet in profile, standing square, on a warm background."""
     size = 128
@@ -704,6 +754,7 @@ def main() -> None:
     for coat in COATS:
         draw_coat(coat).write(ENTITY_DIR / f"whippet_{coat.name}.png")
     draw_collar().write(ENTITY_DIR / "whippet_collar.png")
+    draw_carried_ball().write(ENTITY_DIR / "ball.png")
 
     for squirrel in SQUIRRELS:
         draw_squirrel(squirrel).write(SQUIRREL_DIR / f"squirrel_{squirrel.name}.png")
@@ -712,6 +763,7 @@ def main() -> None:
     draw_spawn_egg().write(ITEM_DIR / "whippet_spawn_egg.png")
     draw_whistle().write(ITEM_DIR / "whippet_whistle.png")
     draw_lure().write(ITEM_DIR / "whippet_lure.png")
+    draw_ball().write(ITEM_DIR / "whippet_ball.png")
     draw_icon().write(ASSETS / "icon.png")
 
 
