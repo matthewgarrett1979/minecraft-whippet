@@ -1,6 +1,18 @@
 Tameable sighthounds for Minecraft: faster than anything else on four legs,
 asleep for most of the day, and prone to detonating into the zoomies.
 
+**In 1.8.0: the whine is her as well.** The honk has been Bonnie since 1.5.0;
+now so is the noise she makes the rest of the time. One long drawn-out call from
+the same afternoon — about 480 Hz, a second of it, a call rather than a shout —
+in place of the borrowed wolf whine: at food in your hand, at being left behind,
+at being cold, and dropped and quietened for the sigh a whippet lets out when it
+finally settles against you. Each dog whines on its own note and puppies higher.
+Only the yelp when something hurts it is still a wolf, and it is staying that
+way.
+
+**Her voice is MIT**, like the rest of the mod, by her owner's decision. The
+recordings are yours to use, change and ship in your own work.
+
 **In 1.7.0: cats, a ball, and a track to race on.**
 
 **Cats.** There is no negotiating with a sighthound about a cat, and they do it
@@ -122,7 +134,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.7.0.jar`** from the assets below in beside it.
+3. Put **`whippets-1.8.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
@@ -171,8 +183,9 @@ covers with one paw showing.
 **The nose.** Hungry, it comes round behind you and taps the back of your leg
 with it. Meeting another whippet, it touches noses once and carries on.
 
-**Noise.** It honks when it wants something and you are not listening, in the
-voice of an actual whippet called Bonnie. It whines at you while you hold food,
+**Noise.** It honks when it wants something and you are not listening, and
+whines the rest of the time, both in the voice of an actual whippet called
+Bonnie. It whines at you while you hold food,
 at being told to stay while you walk off, at being left on a lead, and at being
 cold with nowhere to get under. It sighs, once and heavily, the moment it finally settles against you.
 Hold food and it tilts its head.

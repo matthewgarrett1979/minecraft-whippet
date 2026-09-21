@@ -1,7 +1,17 @@
-# The honk
+# The voice
 
-The whippet's honk is a real whippet honking: Bonnie, recorded by her owner on
-a phone in October 2025, two clips a few seconds each.
+The whippet's honk and its whine are both a real whippet: Bonnie, recorded by
+her owner on a phone in October 2025, two clips a few seconds each.
+
+## Licence
+
+Her owner has asked for her voice to go out under the same MIT licence as the
+rest of the mod. So it does: the recordings in `assets/whippets/sounds/` are
+covered by `LICENSE` like everything else here, and anybody may use them, change
+them, and ship them in their own work, keeping the notice with them. She is not
+carved out and there is nothing extra to agree to.
+
+## The honk
 
 Four takes ship with the mod, in `assets/whippets/sounds/whippet/`:
 
@@ -17,6 +27,23 @@ around 340–610 Hz with most of the energy between 500 Hz and 2.5 kHz, and call
 of 0.14 to 0.39 seconds. Short, bright and nasal — closer to a sharp bark than
 to the long low goose honk the synthesised version guessed at.
 
+## The whine
+
+`whine1.ogg` is one long drawn-out call, 1.03 seconds, from the second clip —
+the same dog on the same afternoon, but a call rather than a shout, about 480 Hz
+and far less abrupt than the honks. It is what a whippet actually spends most of
+its waking day doing, so it is the noise you hear most: whining at food in your
+hand, at being left behind, at being cold, and it stands in for the sigh as
+well, dropped to seven tenths of its pitch and quietened, which is what a dog
+settling down against you sounds like.
+
+One take rather than four, because there was only one call of that kind in the
+recordings. The game pitches it per dog — higher for puppies, and a touch either
+way on the dog's own pace — so two whippets never whine on quite the same note.
+
+The hurt and death sounds are still a wolf's. Nobody has recorded Bonnie being
+hurt and nobody is going to.
+
 ## What was done to them
 
 The phone recordings came in quiet — the first peaked at −27 dBFS with about
@@ -31,6 +58,8 @@ cleaning before they could be brought up to game level:
    flattening the difference between them.
 5. Written as mono Ogg Vorbis at 44.1 kHz, which is what Minecraft wants for a
    positional sound.
+
+The whine had the same treatment, cut from the same cleaned audio.
 
 No pitch-shifting and no time-stretching: the game does its own pitching, a
 little per dog, so each whippet honks on its own note.

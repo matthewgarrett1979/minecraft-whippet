@@ -90,10 +90,13 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
   and in cold or wet weather they tuck up and curl their tail under.
 - **Not quiet.** A whippet whines, and this one whines about things: at you
   while you hold food, at being told to stay while you walk off, at being left
-  on a lead, and at being cold with nowhere to get under. It sighs, once and
-  heavily, the moment it finally settles against you. It has the small dog's
-  panting and muttering and the sad dog's whine, pitched up because it is a
-  narrow little animal — puppies higher still.
+  on a lead, and at being cold with nowhere to get under. **The whine is Bonnie
+  too** — one long drawn-out call from the same afternoon as the honks, which is
+  the noise a whippet actually spends most of its waking day making. It doubles
+  as the sigh it lets out, once and heavily, the moment it finally settles
+  against you: the same call, dropped and quietened. Each dog whines on its own
+  note and puppies higher. Only the yelp when something hurts it is still a
+  borrowed wolf, and it is staying that way.
 - **The snoot.** A whippet's nose is a communication device. A hungry one comes
   and finds you, works its way round behind you where you cannot see it coming,
   and puts its nose against the back of your leg — a cold, deliberate tap — then
@@ -417,8 +420,10 @@ the path as the fallback for when something is in the way. And a dog that is
 genuinely stuck — at the foot of a bank with no way round — now retires from
 the race after eight seconds rather than holding up the result.
 
-The honk is the exception to all of this: it is a recording of Bonnie, not
-generated at all. How it was cleaned and cut is in [docs/sound.md](docs/sound.md).
+Her voice is the exception to all of this: the honk and the whine are recordings
+of Bonnie, not generated at all, and her owner has put them out under the same
+MIT licence as the code — so they are yours to use like the rest of it. How they
+were cleaned and cut is in [docs/sound.md](docs/sound.md).
 `tools/generate_sounds.py` still synthesises one from a pitch contour, thirty
 harmonics and four nasal formants — that is what shipped before there was a
 recording — but it writes to `tools/synthesised-honks/` now and nothing uses it.

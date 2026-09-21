@@ -15,6 +15,12 @@ public final class ModSounds {
 	 * loop.
 	 */
 	public static final SoundEvent WHIPPET_HONK = register("entity.whippet.honk");
+	/**
+	 * The whine. The same dog on the same afternoon as the honks, on one long
+	 * drawn-out call rather than a shout — which is the noise a whippet makes
+	 * most of the time it is awake.
+	 */
+	public static final SoundEvent WHIPPET_WHINE = register("entity.whippet.whine");
 
 	private ModSounds() {
 	}

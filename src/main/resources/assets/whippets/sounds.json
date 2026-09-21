@@ -1,4 +1,10 @@
 {
+	"entity.whippet.whine": {
+		"subtitle": "subtitles.whippets.whippet.whine",
+		"sounds": [
+			"whippets:whippet/whine1"
+		]
+	},
 	"entity.whippet.honk": {
 		"subtitle": "subtitles.whippets.whippet.honk",
 		"sounds": [

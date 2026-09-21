@@ -193,8 +193,10 @@ public class WhippetEntity extends TameableEntity {
 	/** The hop out of the bed. */
 	private static final double LEAP_OUT = 0.42;
 	/**
-	 * A whippet's voice: the small dog's panting and muttering, and the sad dog's
-	 * whine, which is the noise they actually make most of the time.
+	 * What is left of the borrowed voice. The whine and the honk are Bonnie
+	 * herself now; this is the panting and muttering underneath them, and the
+	 * yelp when something hurts — which nobody has recorded her doing, and
+	 * nobody is going to.
 	 */
 	private static final WolfSoundVariant VOICE = SoundEvents.WOLF_SOUNDS.get(WolfSoundVariants.Type.CUTE);
 	private static final WolfSoundVariant WHINGE = SoundEvents.WOLF_SOUNDS.get(WolfSoundVariants.Type.SAD);
@@ -957,7 +959,7 @@ public class WhippetEntity extends TameableEntity {
 		}
 
 		this.whineCooldown = WHINE_COOLDOWN + this.random.nextInt(40);
-		this.playSound(WHINGE.whineSound().value(), this.getSoundVolume() * 1.1F, this.getSoundPitch());
+		this.playSound(ModSounds.WHIPPET_WHINE, this.getSoundVolume() * 1.1F, this.getWhinePitch());
 	}
 
 	/**
@@ -1000,9 +1002,19 @@ public class WhippetEntity extends TameableEntity {
 		return pitch * (0.94F + (this.pace - 0.9F) * 0.6F) + (this.random.nextFloat() - 0.5F) * 0.06F;
 	}
 
-	/** The long-suffering sigh of a dog that has just got comfortable. */
+	/**
+	 * The long-suffering sigh of a dog that has just got comfortable. It is her
+	 * whine again, dropped and quietened: the same noise a settling whippet
+	 * makes, let out slowly instead of aimed at anybody.
+	 */
 	private void sigh() {
-		this.playSound(WHINGE.whineSound().value(), this.getSoundVolume() * 0.7F, 0.75F + this.random.nextFloat() * 0.1F);
+		this.playSound(ModSounds.WHIPPET_WHINE, this.getSoundVolume() * 0.6F, 0.7F + this.random.nextFloat() * 0.06F);
+	}
+
+	/** Her call, pitched to this dog: puppies higher, and no two quite alike. */
+	private float getWhinePitch() {
+		float pitch = this.isBaby() ? 1.3F : 1.0F;
+		return pitch * (0.95F + (this.pace - 0.9F) * 0.5F) + (this.random.nextFloat() - 0.5F) * 0.08F;
 	}
 
 	public boolean isCurled() {
@@ -1487,7 +1499,7 @@ public class WhippetEntity extends TameableEntity {
 		} else if (this.isZooming()) {
 			return VOICE.pantSound().value();
 		} else if (this.isBegging() || this.isTamed() && this.getHealth() < this.getMaxHealth() * 0.5F) {
-			return WHINGE.whineSound().value();
+			return ModSounds.WHIPPET_WHINE;
 		}
 
 		return this.random.nextInt(3) == 0 ? VOICE.pantSound().value() : VOICE.ambientSound().value();
