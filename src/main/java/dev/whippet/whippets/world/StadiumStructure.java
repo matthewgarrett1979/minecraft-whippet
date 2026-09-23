@@ -16,7 +16,7 @@ import net.minecraft.world.gen.structure.StructureType;
 public class StadiumStructure extends Structure {
 	public static final MapCodec<StadiumStructure> CODEC = createCodec(StadiumStructure::new);
 	/** The most the ground may rise and fall across the site before it is no good. */
-	private static final int TOO_HILLY = 14;
+	private static final int TOO_HILLY = 18;
 	/** How many points across the site are sampled to decide that. */
 	private static final int SAMPLES = 7;
 

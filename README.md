@@ -307,6 +307,34 @@ lure at the finish, stand at the traps and call them up.
 **Where they live** — plains, sunflower plains, meadows, savanna and savanna
 plateau, in ones and twos.
 
+![Three fawn whippets and a dark lurcher closed in around an XL Bully half again their height on open grass](docs/bully.png)
+
+**The XL Bully** (`whippets:bully`) — half a ton of dog built like a filing
+cabinet. Two blocks at the shoulder and nearly three from nose to tail, a head
+the width of its own chest, and small folded ears on top of it because there is
+nowhere on a head that shape for a big ear to go. It is the one animal in this
+mod that is bigger than you are.
+
+There is only ever one. It does not run in a pack, it will not spawn within a
+hundred and sixty blocks of another, and it does not belong to anybody whatever
+the man who lost it says. It turns up in the same open country the whippets do
+and it is a great deal rarer: a sweep of five and a half thousand fresh chunks
+turned up a hundred and eight whippets and three bullies, each on its own.
+
+- **It is slow**, and that is the whole of the answer to it: five blocks a
+  second against a whippet's thirteen. Nothing on four short legs catches a
+  sighthound on grass, so you are never obliged to fight it.
+- **It bites hard and it throws what it bites.** Six damage a time through
+  armour, with enough behind it to put a whippet on its back a couple of blocks
+  away, and knocking it back barely moves it.
+- **A whippet on its own will not start.** It knows better, and that is why lone
+  dogs do not die of this. Three of them together will, and then they all go in
+  at once — the first one to see it honks and brings in everything within
+  twenty-four blocks.
+- **It takes the pack to finish it.** Five whippets and Bobby Brazil put it down
+  in about half a minute, and it usually costs you three of them.
+- It comes for you too, if you get inside a dozen blocks of it.
+
 ![Three squirrels sitting up on their haunches — black, grey and red — under the trees](docs/squirrels.png)
 
 **The squirrel** (`whippets:squirrel`) — small, quick and entirely aware that it
@@ -383,6 +411,7 @@ JAVA_HOME=/path/to/jdk-25 ./gradlew runServer # dev server, world in run/
 ```
 .github/workflows/build.yml    CI: build, boot a server with the jar, release on a tag
 tools/generate_textures.py     draws every PNG in the mod
+tools/generate_bully_sounds.py the bully's bark and growl, synthesised
 src/main/java/dev/whippet/whippets/
   Whippets.java          mod entrypoint
   ModEntities.java       entity type, spawn restrictions, default attributes
@@ -402,7 +431,9 @@ src/main/java/dev/whippet/whippets/
   entity/ai/BarkUpTheTreeGoal.java     stand under the tree and complain
   entity/ai/FetchGoal.java    go after the ball, and mostly bring it back
   entity/ai/HuntCatsGoal.java  see a cat, tell the others, go
+  entity/ai/TakeOnTheBullyGoal.java  count the pack, and only then start something
   entity/GuvnorEntity.java    the man who runs the stadium, and the purse
+  entity/BullyEntity.java     the XL Bully: one to a world, and slow enough to walk away from
   world/TrackStructure.java   whether this ground will take a little track
   world/TrackPiece.java       the little track itself, one chunk at a time
   world/StadiumStructure.java  whether this ground will take a stadium
@@ -420,6 +451,7 @@ src/client/java/dev/whippet/whippets/client/
   SquirrelEntityModel.java    the squirrel, its tail, and the bound / sit-up / climb poses
   WhippetEntityRenderer.java  renderer, render state and the collar layer
   WhippetBallFeatureRenderer.java  the ball, in the mouth, where the dog put it
+  BullyEntityModel.java       the bully: blocks rather than lines, and the lean it bites with
 src/main/resources/            fabric.mod.json, textures, lang, loot table, tag, recipe
 ```
 
@@ -433,8 +465,9 @@ and a table of cuboid UVs, using nothing but the Python standard library:
 python3 tools/generate_textures.py
 ```
 
-The `WHIPPET_BOXES` and `SQUIRREL_BOXES` tables in that script mirror the
-cuboids in `WhippetEntityModel.getModelData()` and `SquirrelEntityModel`. If you move a box in a model, move it
+The `WHIPPET_BOXES`, `SQUIRREL_BOXES` and `BULLY_BOXES` tables in that script
+mirror the cuboids in `WhippetEntityModel.getModelData()`, `SquirrelEntityModel`
+and `BullyEntityModel`. If you move a box in a model, move it
 there too and re-run, or the coat will land on the wrong face.
 
 The shape itself is drawn from photographs of a real whippet rather than from
@@ -497,6 +530,13 @@ were cleaned and cut is in [docs/sound.md](docs/sound.md).
 `tools/generate_sounds.py` still synthesises one from a pitch contour, thirty
 harmonics and four nasal formants — that is what shipped before there was a
 recording — but it writes to `tools/synthesised-honks/` now and nothing uses it.
+
+The bully's voice is synthesised by the same method moved down into a much
+bigger chest: `tools/generate_bully_sounds.py` writes its three barks and two
+growls from a fundamental around 120 Hz — against the whippet's 455 — with the
+formants low and close together for a short wide throat, a noisy onset where
+the whole airway lets go at once, and a heavy amplitude ripple that is all a
+growl really is. Nobody is holding a phone in front of an XL Bully.
 
 The banner is Bonnie herself, coarsened into the game's idiom:
 `tools/banner/Pixelate.java` downsamples her photograph to a 160-square grid

@@ -13,6 +13,32 @@ way.
 **Her voice is MIT**, like the rest of the mod, by her owner's decision. The
 recordings are yours to use, change and ship in your own work.
 
+**In 2.1.0: the XL Bully, and a stadium you can actually find.**
+
+**The XL Bully.** One dog, somewhere out in the same open country the whippets
+live in, two blocks at the shoulder and nearly three nose to tail: a head the
+width of its own chest, a neck shorter than the head and thicker than both, and
+legs like fence posts. There is only ever one — it will not spawn within a
+hundred and sixty blocks of another — and it is not tameable, not leashable and
+not interested. A sweep of five and a half thousand fresh chunks turned up three
+of them, against a hundred and eight whippets.
+
+It is slow, which is the whole answer to it: five blocks a second against a
+whippet's thirteen, so you are never obliged to fight it. If you do, it bites
+for six through armour and throws what it bites. A whippet on its own knows
+better and will not start; three together will, and the first one to see it
+honks and brings in everything within twenty-four blocks. Five whippets and
+Bobby Brazil put it down in about half a minute and it usually costs three of
+them. Its bark and its growl are synthesised at a hundred and twenty hertz,
+against Bonnie's four hundred and fifty.
+
+**The stadium was too hard to find.** It generated fine — it was just nearly
+three thousand to five and a half thousand blocks away, which is a long walk on
+the off chance. Sites are now attempted two and a half times as often and it
+will take slightly rougher ground, which across five test seeds brought the
+nearest one down from 2,867-5,632 blocks to 988-1,936. `/locate structure
+whippets:stadium` still does the finding.
+
 **In 2.0.0: the stadium, the Guv'nor and Bobby Brazil.**
 
 **A stadium, modelled on the Emirates and built to its size.** The little track
@@ -166,7 +192,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-2.0.0.jar`** from the assets below in beside it.
+3. Put **`whippets-2.1.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.

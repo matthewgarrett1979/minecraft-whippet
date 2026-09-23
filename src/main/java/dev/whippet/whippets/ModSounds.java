@@ -21,6 +21,15 @@ public final class ModSounds {
 	 * most of the time it is awake.
 	 */
 	public static final SoundEvent WHIPPET_WHINE = register("entity.whippet.whine");
+	/**
+	 * The bully's bark. Nobody recorded this one — see
+	 * {@code tools/generate_bully_sounds.py} — because it is a hundred and
+	 * twenty hertz against the whippet's four hundred and fifty, and because
+	 * nobody is holding a phone in front of an XL Bully to find out.
+	 */
+	public static final SoundEvent BULLY_BARK = register("entity.bully.bark");
+	/** And the growl, lower still: the noise that means it has seen you. */
+	public static final SoundEvent BULLY_GROWL = register("entity.bully.growl");
 
 	private ModSounds() {
 	}

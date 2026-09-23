@@ -1,5 +1,6 @@
 package dev.whippet.whippets;
 
+import dev.whippet.whippets.entity.BullyEntity;
 import dev.whippet.whippets.entity.GuvnorEntity;
 import dev.whippet.whippets.entity.SquirrelEntity;
 import dev.whippet.whippets.entity.WhippetEntity;
@@ -65,6 +66,33 @@ public final class ModEntities {
 			.eyeHeight(1.74F)
 			.maxTrackingRange(10)
 			.build(GUVNOR_KEY)
+	);
+
+	public static final RegistryKey<EntityType<?>> BULLY_KEY = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Whippets.id("bully"));
+
+	/**
+	 * The XL Bully. Two blocks at the shoulder and nearly three long, which is
+	 * where the dinosaur comparison comes from, and it is not far off.
+	 */
+	public static final EntityType<BullyEntity> BULLY = Registry.register(
+		Registries.ENTITY_TYPE,
+		BULLY_KEY,
+		FabricEntityType.Builder.createMob(
+				BullyEntity::new,
+				SpawnGroup.CREATURE,
+				mob -> mob.spawnRestriction(
+						SpawnLocationTypes.ON_GROUND,
+						Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+						(type, world, reason, pos, random) -> world.getBlockState(pos.down()).isSolidBlock(world, pos.down())
+							&& world.getBaseLightLevel(pos, 0) > 8
+							&& BullyEntity.isAlone(world, pos.getX(), pos.getY(), pos.getZ())
+					)
+					.defaultAttributes(BullyEntity::createBullyAttributes)
+			)
+			.dimensions(1.6F, 2.3F)
+			.eyeHeight(2.05F)
+			.maxTrackingRange(12)
+			.build(BULLY_KEY)
 	);
 
 	private ModEntities() {

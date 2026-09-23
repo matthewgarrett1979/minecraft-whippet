@@ -14,6 +14,7 @@ import dev.whippet.whippets.entity.ai.GreetGoal;
 import dev.whippet.whippets.entity.ai.HuntCatsGoal;
 import dev.whippet.whippets.entity.ai.RaceGoal;
 import dev.whippet.whippets.entity.ai.SnootGoal;
+import dev.whippet.whippets.entity.ai.TakeOnTheBullyGoal;
 import dev.whippet.whippets.entity.ai.ZoomiesGoal;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.DataComponentTypes;
@@ -325,6 +326,7 @@ public class WhippetEntity extends TameableEntity {
 		// over and the dog knows it, whatever it says about it afterwards.
 		// Cats. Every whippet within earshot comes in on it; see HuntCatsGoal.
 		this.targetSelector.add(4, new HuntCatsGoal(this));
+		this.targetSelector.add(4, new TakeOnTheBullyGoal(this));
 		this.targetSelector.add(5, new ActiveTargetGoal<>(this, SquirrelEntity.class, 10, true, false, (entity, world) -> {
 			return !this.isRacing() && !this.isInSittingPose() && entity instanceof SquirrelEntity squirrel && squirrel.isReachable(this.getY());
 		}));

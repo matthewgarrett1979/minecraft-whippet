@@ -28,6 +28,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "src" / "main" / "resources" / "assets" / "whippets"
 ENTITY_DIR = ASSETS / "textures" / "entity" / "whippet"
 SQUIRREL_DIR = ASSETS / "textures" / "entity" / "squirrel"
+BULLY_DIR = ASSETS / "textures" / "entity" / "bully"
 ITEM_DIR = ASSETS / "textures" / "item"
 
 TRANSPARENT = (0, 0, 0, 0)
@@ -54,6 +55,22 @@ SQUIRREL_BOXES = {
     "tail": (10, 12, 4, 8, 3),
     "tail_tip": (26, 12, 5, 5, 3),
     "nut": (44, 12, 2, 2, 2),
+}
+
+# name -> (u, v, width, height, depth). Must stay in step with
+# BullyEntityModel.getModelData(), which is laid out on a 128x64 sheet because
+# nothing about this animal fits on the whippet's.
+BULLY_BOXES = {
+    "chest": (0, 0, 14, 15, 13),
+    "loin": (56, 0, 12, 13, 11),
+    "head": (0, 30, 12, 12, 11),
+    "neck": (48, 30, 10, 10, 5),
+    "muzzle": (80, 30, 8, 6, 3),
+    "haunch": (0, 55, 9, 9, 9),
+    "foreleg": (38, 55, 6, 10, 6),
+    "hindleg": (64, 55, 7, 10, 7),
+    "ear": (94, 55, 3, 4, 2),
+    "tail": (94, 63, 4, 4, 9),
 }
 
 BODY_BOXES = ("chest", "loin", "neck", "haunch", "tail")
@@ -508,6 +525,78 @@ def draw_squirrel(squirrel: Squirrel) -> Image:
     return image
 
 
+def draw_bully() -> Image:
+    """A blue XL Bully with a white chest and white feet, which is what half of
+    them look like, and a good deal of scar tissue, which is what all of them
+    look like."""
+    base = (108, 112, 118, 255)
+    belly = (206, 206, 202, 255)
+    shade = shift(base, -0.2)
+    highlight = shift(base, 0.1)
+    scar = (150, 138, 134, 255)
+    image = Image(128, 128, boxes=BULLY_BOXES)
+
+    for box in BULLY_BOXES:
+        image.fill_box(box, base)
+        image.fill_face(box, "top", highlight)
+
+    # Underneath is pale on nearly every one of them, and it runs up the chest
+    # and throat into a bib.
+    for box in ("chest", "loin", "neck"):
+        image.fill_face(box, "bottom", belly)
+        for face in ("north", "south"):
+            image.face_rows_from_bottom(box, face, 3, belly)
+        for face in FLANKS:
+            image.face_rows_from_bottom(box, face, 2, blend(base, belly, 0.6))
+
+    # The bib itself: the front of the chest and the underside of the jaw.
+    image.fill_face("chest", "north", belly)
+    image.face_rows_from_bottom("head", "north", 3, belly)
+    image.fill_face("muzzle", "bottom", belly)
+
+    # White socks, front feet whiter than back, which is how they come.
+    image.face_rows_from_bottom("foreleg", "north", 4, belly)
+    image.face_rows_from_bottom("foreleg", "south", 4, belly)
+    for face in FLANKS:
+        image.face_rows_from_bottom("foreleg", face, 4, belly)
+        image.face_rows_from_bottom("hindleg", face, 3, blend(base, belly, 0.8))
+    image.fill_face("foreleg", "bottom", shift(belly, -0.15))
+    image.fill_face("hindleg", "bottom", shift(belly, -0.15))
+    image.face_rows_from_bottom("hindleg", "north", 3, blend(base, belly, 0.8))
+    image.face_rows_from_bottom("hindleg", "south", 3, blend(base, belly, 0.8))
+
+    # Muscle: a hard line along the top of the shoulder and over the haunch.
+    for box in ("chest", "loin", "haunch"):
+        for face in FLANKS:
+            image.face_row(box, face, 0, shade)
+            image.face_row(box, face, 1, blend(base, shade, 0.4))
+
+    # The face. Small dark eyes set wide and low on a head this size, a black
+    # mask over the muzzle, and a nose that takes up most of the front of it.
+    x, y, w, h = faces("head", BULLY_BOXES)["north"]
+    for eye in (x + 2, x + w - 3):
+        image.rect(eye, y + 4, 1, 2, (26, 24, 22, 255))
+        image.set(eye, y + 3, shift(base, -0.35))
+    image.rect(x, y + h - 1, w, 1, shift(belly, -0.1))
+    image.fill_box("muzzle", blend(base, (48, 44, 42, 255), 0.55))
+    mx, my, mw, mh = faces("muzzle", BULLY_BOXES)["north"]
+    image.rect(mx + 1, my + 1, mw - 2, 2, (22, 20, 20, 255))
+    image.fill_face("muzzle", "bottom", belly)
+
+    # Ears: darker than the coat, as they are on a blue dog.
+    image.fill_box("ear", shift(base, -0.25))
+
+    # Scars. Every one of these dogs has been through something.
+    image.rect(x + w - 4, y + 1, 1, 3, scar)
+    cx, cy, cw, ch = faces("chest", BULLY_BOXES)["east"]
+    image.rect(cx + 3, cy + 4, 1, 4, scar)
+    image.rect(cx + 7, cy + 2, 2, 1, scar)
+    lx, ly, lw, lh = faces("loin", BULLY_BOXES)["west"]
+    image.rect(lx + 4, ly + 3, 1, 3, scar)
+
+    return image
+
+
 def draw_squirrel_spawn_egg() -> Image:
     """Spawn-egg silhouette: a rusty shell with pale flecks."""
     return from_map(
@@ -877,6 +966,7 @@ def main() -> None:
     draw_ball().write(ITEM_DIR / "whippet_ball.png")
     draw_trophy().write(ITEM_DIR / "racing_trophy.png")
     draw_guvnor().write(ENTITY_DIR.parent / "guvnor.png")
+    draw_bully().write(BULLY_DIR / "bully.png")
     draw_icon().write(ASSETS / "icon.png")
 
 

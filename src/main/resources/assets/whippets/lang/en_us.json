@@ -48,5 +48,8 @@
 	"variant.whippets.grey": "grey",
 	"variant.whippets.black": "black",
 	"subtitles.whippets.whippet.honk": "Whippet honks",
-	"subtitles.whippets.whippet.whine": "Whippet whines"
+	"subtitles.whippets.whippet.whine": "Whippet whines",
+	"entity.whippets.bully": "XL Bully",
+	"subtitles.whippets.bully.bark": "XL Bully barks",
+	"subtitles.whippets.bully.growl": "XL Bully growls"
 }

@@ -16,5 +16,20 @@
 				"weight": 2
 			}
 		]
+	},
+	"entity.bully.bark": {
+		"subtitle": "subtitles.whippets.bully.bark",
+		"sounds": [
+			"whippets:bully/bark1",
+			"whippets:bully/bark2",
+			"whippets:bully/bark3"
+		]
+	},
+	"entity.bully.growl": {
+		"subtitle": "subtitles.whippets.bully.growl",
+		"sounds": [
+			"whippets:bully/growl1",
+			"whippets:bully/growl2"
+		]
 	}
 }

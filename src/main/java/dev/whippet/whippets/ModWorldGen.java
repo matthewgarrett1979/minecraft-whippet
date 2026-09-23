@@ -47,5 +47,20 @@ public final class ModWorldGen {
 			1,
 			3
 		);
+
+		// And somewhere out in the same country, one XL Bully. One: the weight
+		// is a eighth of the whippets' and it will not spawn within a hundred
+		// and sixty blocks of another, so you get one dog, on its own, a long
+		// way from the last one.
+		BiomeModifications.addSpawn(
+			BiomeSelectors.includeByKey(
+				BiomeKeys.PLAINS, BiomeKeys.SUNFLOWER_PLAINS, BiomeKeys.MEADOW, BiomeKeys.SAVANNA, BiomeKeys.SAVANNA_PLATEAU
+			),
+			SpawnGroup.CREATURE,
+			ModEntities.BULLY,
+			1,
+			1,
+			1
+		);
 	}
 }
