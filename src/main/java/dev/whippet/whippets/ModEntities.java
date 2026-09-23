@@ -1,5 +1,6 @@
 package dev.whippet.whippets;
 
+import dev.whippet.whippets.entity.GuvnorEntity;
 import dev.whippet.whippets.entity.SquirrelEntity;
 import dev.whippet.whippets.entity.WhippetEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityType;
@@ -51,6 +52,19 @@ public final class ModEntities {
 			.eyeHeight(0.45F)
 			.maxTrackingRange(8)
 			.build(SQUIRREL_KEY)
+	);
+
+	public static final RegistryKey<EntityType<?>> GUVNOR_KEY = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Whippets.id("guvnor"));
+
+	/** The man who runs the stadium. One to a stadium, and he does not spawn wild. */
+	public static final EntityType<GuvnorEntity> GUVNOR = Registry.register(
+		Registries.ENTITY_TYPE,
+		GUVNOR_KEY,
+		FabricEntityType.Builder.createMob(GuvnorEntity::new, SpawnGroup.MISC, mob -> mob.defaultAttributes(GuvnorEntity::createGuvnorAttributes))
+			.dimensions(0.6F, 1.95F)
+			.eyeHeight(1.74F)
+			.maxTrackingRange(10)
+			.build(GUVNOR_KEY)
 	);
 
 	private ModEntities() {

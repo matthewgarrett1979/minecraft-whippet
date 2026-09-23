@@ -28,5 +28,7 @@ public class WhippetsClient implements ClientModInitializer {
 			() -> TexturedModelData.of(SquirrelEntityModel.getModelData(Dilation.NONE), 64, 32).transform(SquirrelEntityModel.BABY_TRANSFORMER)
 		);
 		EntityRendererRegistry.register(ModEntities.SQUIRREL, SquirrelEntityRenderer::new);
+
+		EntityRendererRegistry.register(ModEntities.GUVNOR, GuvnorEntityRenderer::new);
 	}
 }

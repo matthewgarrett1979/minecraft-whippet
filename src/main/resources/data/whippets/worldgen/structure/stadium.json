@@ -1,0 +1,7 @@
+{
+	"type": "whippets:stadium",
+	"biomes": "#whippets:has_stadium",
+	"spawn_overrides": {},
+	"step": "surface_structures",
+	"terrain_adaptation": "beard_thin"
+}

@@ -23,6 +23,8 @@ public final class ModItems {
 	public static final Item WHIPPET_WHISTLE = register("whippet_whistle", WhippetWhistleItem::new, new Item.Settings().maxCount(1));
 	public static final Item WHIPPET_LURE = register("whippet_lure", WhippetLureItem::new, new Item.Settings().maxCount(1));
 	public static final Item WHIPPET_BALL = register("whippet_ball", WhippetBallItem::new, new Item.Settings().maxCount(1));
+	/** What the Guv'nor hands over for beating his dog. There is no recipe for one. */
+	public static final Item RACING_TROPHY = register("racing_trophy", Item::new, new Item.Settings().maxCount(1).rarity(net.minecraft.util.Rarity.RARE));
 
 	private ModItems() {
 	}
@@ -41,6 +43,7 @@ public final class ModItems {
 			entries.add(WHIPPET_WHISTLE);
 			entries.add(WHIPPET_LURE);
 			entries.add(WHIPPET_BALL);
+			entries.add(RACING_TROPHY);
 		});
 	}
 }

@@ -79,6 +79,8 @@ a random coat). A sixth coat belongs to Bonnie and is never rolled at random.
   kicking up dust as it goes, then flops down where it stopped and refuses to
   move for a few seconds.
 - **Sighthound instinct.** Untamed whippets hunt rabbits and chickens on sight.
+- **Lurchers.** Bigger than a whippet and faster than one, and the only one in
+  the world is Bobby Brazil, who lives at the stadium. See below.
 - **Cats.** There is no negotiating with a sighthound about a cat. It is not
   dislike exactly — a cat is the right size, the right shape and the wrong
   speed, and the dog's opinion is settled before it has thought about it. Tame
@@ -236,15 +238,63 @@ a short track the break decides the race; on a long one the better dog tells,
 which is the whole argument for running them over a proper distance. A pegged
 lure is remembered for the session, so peg it again after a restart.
 
-![A whippet track in open country by a lake: a dirt-path running surface between fenced rails with lanterns, a stone stand down one side, four traps and a clubhouse at the far end, two whippets standing on the track](docs/track.png)
+![A whippet stadium seen from above: an oval bowl of red and grey tiered seating around a striped green pitch, with a sandy racing track ringing the pitch, a roof ring and four floodlight masts](docs/stadium.png)
 
-**The track** — somebody has built a whippet track out here, and it turns up in
-open country: plains, sunflower plains, meadow, savanna and savanna plateau,
-about one in every sixty chunks of it. Thirty-six blocks of run between two
-fenced rails with lanterns on the posts, four traps at one end, a lure on a
-gantry over the finish line, a stone stand down one side to shout from, and a
-clubhouse with a campfire, hay bales and a chest with the club's gear in it: a
-lure, a whistle, a ball, a lead, some bones and a couple of rabbits.
+**The stadium** — and then there is the big one. Somewhere out in open country
+there is a proper stadium, modelled on the Emirates and built to something like
+its size: two hundred blocks by a hundred and sixty of oval bowl, a hundred and
+twenty by eighty-four of racing track inside it, two tiers of red seating raked
+one in two the whole way round with a concourse between them, four tunnels in
+through the stand, a quartz facade with arched openings, a roof ring over the
+back of the stand and four floodlight masts. Six traps on the home straight, a
+finish line under a gantry, and a pitch mown in stripes.
+
+It is rare, it needs a couple of hundred blocks of nearly level ground, and it
+will not generate on top of a village. Being a proper structure rather than a
+scattered feature, you can also ask the game where the nearest one is:
+
+```
+/locate structure whippets:stadium
+```
+
+![Inside the bowl: the striped pitch, the sandy track, the white running rail and banks of red seats rising to a roof ring](docs/stadium-inside.png)
+
+![A near-black lurcher standing beside a fawn whippet on the stadium pitch, noticeably taller and heavier than the whippet](docs/bobby.png)
+
+**Bobby Brazil** — the dog at the top of the card. He is a lurcher rather than a
+whippet: a head taller, heavier, and carrying a pace of 1.28 when the best
+whippet ever born rolls about 1.10. He is drawn from a real lurcher — near
+black with a warm cast, a tan muzzle going grey, a white chin and chest and
+white toes on every foot — and he lives on the pitch. He is not tameable, he is
+not for sale, and he does not leave the ground.
+
+He is beatable. He is not easily beatable: over the stadium's home straight a
+field of ordinary good whippets takes him about two times in five, and he does
+not miss his break the way your dogs will.
+
+![A man in a flat cap and brown jacket standing in front of the stadium's red seats](docs/guvnor.png)
+
+**The Guv'nor** — the man who runs the place, and the only one who can put a
+meeting on. Bring your tamed whippets inside the ground and right-click him:
+he pegs the lure at the finish, enters Bobby against you, calls the field to
+the traps and starts the card. Then he settles up.
+
+- Win an ordinary race here and he pays three emeralds.
+- **Beat Bobby Brazil** and it is twelve emeralds and the **Racing Trophy**,
+  which has no recipe and is the only way to get one.
+- Beat nothing and he will tell you Bobby is a good dog, mind.
+
+![A whippet track in open country seen from the side: the full length of a dirt-path running surface between fenced rails with lanterns, the white finish line and a red-and-white rag on its gantry at the far end, a stone stand down the near side, a clubhouse with a campfire smoking beside it, and a whippet standing by the traps](docs/track.png)
+
+**The little track** — the village end of the sport, and much more common than
+the stadium: a track out in open country in plains, sunflower plains, meadow,
+savanna and savanna plateau, one somewhere in every hundred and forty chunks of
+it. Thirty-six blocks of run between two fenced rails with lanterns on the
+posts, four traps at one end, a lure on a gantry over the finish line, a stone
+stand down one side to shout from, and a clubhouse with a campfire, hay bales
+and a chest with the club's gear in it: a lure, a whistle, a ball, a lead, some
+bones and a couple of rabbits. `/locate structure whippets:whippet_track` will
+find you the nearest one.
 
 There are whippets living on it. Two or three of them, and they do not wander
 off, and nobody knows whose they are.
@@ -352,7 +402,11 @@ src/main/java/dev/whippet/whippets/
   entity/ai/BarkUpTheTreeGoal.java     stand under the tree and complain
   entity/ai/FetchGoal.java    go after the ball, and mostly bring it back
   entity/ai/HuntCatsGoal.java  see a cat, tell the others, go
-  world/WhippetTrackFeature.java  the track, built block by block where the ground allows
+  entity/GuvnorEntity.java    the man who runs the stadium, and the purse
+  world/TrackStructure.java   whether this ground will take a little track
+  world/TrackPiece.java       the little track itself, one chunk at a time
+  world/StadiumStructure.java  whether this ground will take a stadium
+  world/StadiumPiece.java     the stadium itself, one chunk at a time
   entity/ai/SquirrelFleeWhippetGoal.java  break for a trunk and go up it
   entity/ai/SquirrelTauntGoal.java     chatter at the dog from out of reach
   entity/ai/SquirrelStashGoal.java     steal it, carry it off, bury it
@@ -403,12 +457,28 @@ less ground than a slower one. Hence running by sight, in `mobTick`, which
 overrides the path with a straight line at the quarry whenever the next stride
 and a half is clear, and hands the steering back the moment it is not.
 
-The track is built the same way as everything else here — in code, from a table
-of block positions, with no saved structure file — and it levels and foots its
-own site so it can be dropped on gently rolling ground without ending up on
-stilts. It is a placed feature rather than a structure, which means you cannot
-`/locate` it; `/place feature whippets:whippet_track` will put one wherever you
-are standing if you would rather not go looking.
+Both tracks are built the same way as everything else here — in code, from a
+table of block positions, with no saved structure file — and both level and foot
+their own site, so they can be dropped on gently rolling ground without ending up
+on stilts.
+
+Both are also **structures** rather than features, and for the stadium that is
+the whole reason it can be that big. A feature may only write to the chunk it
+was called for and the ring of chunks around it: anything further off is thrown
+away, with an error in the log and a hole in the build. The little track was a
+feature until 2.0.0, and at forty-three blocks laid from a random spot inside a
+chunk it regularly ran off the end of what it was allowed to write, which is
+why tracks were turning up short of their traps or their finish. A structure is
+handed its site one chunk at a time and clips each pass to that chunk, so the
+track comes out whole wherever the seams fall and the stadium goes down over a
+hundred and forty chunks without one. Everything about the bowl is
+worked out from one ellipse — the track's outer edge — and a local scale factor
+that converts a distance measured outwards from it into blocks, so the seating,
+the concourse, the facade and the tunnels all come out the same width on the
+bends as they are on the straights, rather than pinching round the ends. The
+pitch is concrete rather than turf on purpose: the world plants its trees after
+the structures go down, and a grass infield comes up with an oak wood in the
+middle of it.
 
 Racing needed three fixes to work on ground that is not a billiard table. A
 lure pegged on a ledge used to hang in the air where no dog could reach it, so

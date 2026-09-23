@@ -1,39 +1,19 @@
 package dev.whippet.whippets;
 
-import dev.whippet.whippets.world.WhippetTrackFeature;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.entity.SpawnGroup;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.gen.GenerationStep;
-import net.minecraft.world.gen.feature.DefaultFeatureConfig;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.PlacedFeature;
 
 public final class ModWorldGen {
-	/** The track itself: built block by block rather than stamped from a file. */
-	public static final Feature<DefaultFeatureConfig> WHIPPET_TRACK = Registry.register(
-		Registries.FEATURE, Whippets.id("whippet_track"), new WhippetTrackFeature(DefaultFeatureConfig.CODEC)
-	);
-	private static final RegistryKey<PlacedFeature> WHIPPET_TRACK_PLACED = RegistryKey.of(RegistryKeys.PLACED_FEATURE, Whippets.id("whippet_track"));
-
 	private ModWorldGen() {
 	}
 
 	public static void initialize() {
-		// Somebody built a track out here. It is in open country, which is the
-		// only country a whippet track can be in, and there are dogs on it.
-		BiomeModifications.addFeature(
-			BiomeSelectors.includeByKey(
-				BiomeKeys.PLAINS, BiomeKeys.SUNFLOWER_PLAINS, BiomeKeys.MEADOW, BiomeKeys.SAVANNA, BiomeKeys.SAVANNA_PLATEAU
-			),
-			GenerationStep.Feature.SURFACE_STRUCTURES,
-			WHIPPET_TRACK_PLACED
-		);
+		// The tracks and the stadium are structures, laid out in the datapack
+		// under data/whippets/worldgen: a feature may only write to the chunk it
+		// was called for and the ring around it, which is not enough ground for
+		// either of them. What is left here is who lives where.
 
 		// Squirrels want trees, and plenty of them.
 		BiomeModifications.addSpawn(

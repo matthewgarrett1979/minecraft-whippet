@@ -20,7 +20,13 @@ public enum WhippetCoat {
 	 * Weight zero, so she is never rolled at random and never turns up wild — a
 	 * whippet has to be named for her before she wears it.
 	 */
-	BONNIE("bonnie", 0);
+	BONNIE("bonnie", 0),
+	/**
+	 * A lurcher's coat rather than a whippet's, and Bobby Brazil's in
+	 * particular: near black with a warm cast, a tan muzzle, a white chin and
+	 * chest and white toes. Never rolled — a dog has to be a lurcher to wear it.
+	 */
+	LURCHER("lurcher", 0);
 
 	private static final WhippetCoat[] VALUES = values();
 	private static final int TOTAL_WEIGHT;

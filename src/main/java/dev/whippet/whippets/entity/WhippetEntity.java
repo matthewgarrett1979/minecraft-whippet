@@ -96,6 +96,7 @@ public class WhippetEntity extends TameableEntity {
 	private static final TrackedData<Boolean> SNOOTING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> TURBO = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> CARRYING_BALL = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	private static final TrackedData<Boolean> LURCHER = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
 	public static final Identifier ZOOMIES_SPEED_MODIFIER_ID = Whippets.id("zoomies");
 	private static final EntityAttributeModifier ZOOMIES_SPEED_MODIFIER = new EntityAttributeModifier(
@@ -106,6 +107,21 @@ public class WhippetEntity extends TameableEntity {
 	 * Turbo. The modifier is rebuilt in steps as the dog winds up, because a
 	 * whippet does not arrive at top speed, it accelerates into it.
 	 */
+	/**
+	 * A lurcher is a whippet's bigger cousin — a sighthound crossed with
+	 * something with a bit more bone — so it stands a head taller, carries more
+	 * weight and has more pace than any whippet on the field.
+	 */
+	public static final Identifier LURCHER_SIZE_MODIFIER_ID = Whippets.id("lurcher_size");
+	public static final Identifier LURCHER_HEALTH_MODIFIER_ID = Whippets.id("lurcher_health");
+	private static final double LURCHER_SCALE = 0.18;
+	private static final double LURCHER_HEALTH = 8.0;
+	/**
+	 * A lurcher's pace. Well clear of anything a whippet is born with — the
+	 * best of them roll about 1.10 — because the whole point of the dog at the
+	 * top of the card is that beating him takes a good one and a good run.
+	 */
+	private static final float LURCHER_PACE = 1.28F;
 	public static final Identifier TURBO_SPEED_MODIFIER_ID = Whippets.id("turbo");
 	public static final Identifier BLOWN_SPEED_MODIFIER_ID = Whippets.id("blown");
 	/** What a blown dog is reduced to until it gets its breath back. */
@@ -239,6 +255,8 @@ public class WhippetEntity extends TameableEntity {
 	private int hungerTicks;
 	/** The bedding this dog is on its way to, so no two head for the same one. */
 	private @Nullable BlockPos beddingClaim;
+	/** The stadium's champion: untameable, and he stays on the ground. */
+	private boolean champion;
 	private int snootTicks;
 	private boolean settledSigh;
 	/** This dog's form: a lasting edge or handicap over a racing distance. */
@@ -324,6 +342,7 @@ public class WhippetEntity extends TameableEntity {
 		builder.add(SNOOTING, false);
 		builder.add(TURBO, false);
 		builder.add(CARRYING_BALL, false);
+		builder.add(LURCHER, false);
 	}
 
 	@Override
@@ -334,6 +353,8 @@ public class WhippetEntity extends TameableEntity {
 		view.putInt("Hunger", this.hungerTicks);
 		view.putInt("Breath", this.breath);
 		view.putBoolean("Ball", this.isCarryingBall());
+		view.putBoolean("Lurcher", this.isLurcher());
+		view.putBoolean("Champion", this.champion);
 		view.put("CollarColor", DyeColor.INDEX_CODEC, this.getCollarColor());
 	}
 
@@ -354,6 +375,11 @@ public class WhippetEntity extends TameableEntity {
 		this.hungerTicks = view.getInt("Hunger", 0);
 		this.breath = view.getInt("Breath", LUNGS);
 		this.dataTracker.set(CARRYING_BALL, view.getBoolean("Ball", false));
+		this.champion = view.getBoolean("Champion", false);
+
+		if (view.getBoolean("Lurcher", false)) {
+			this.setLurcher(true);
+		}
 	}
 
 	@Override
@@ -514,7 +540,8 @@ public class WhippetEntity extends TameableEntity {
 	public void leaveTraps() {
 		this.inTraps = false;
 		// Some dogs miss the break completely; it is half of whippet racing.
-		this.reactionTicks = this.random.nextInt(11);
+		// Not the champion, though. He has done this before.
+		this.reactionTicks = this.champion ? this.random.nextInt(3) : this.random.nextInt(11);
 	}
 
 	public void stopRacing() {
@@ -602,6 +629,56 @@ public class WhippetEntity extends TameableEntity {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Whether this one is a lurcher: bigger, heavier and faster than the dogs it
+	 * lines up against, and not something that turns up wild.
+	 */
+	public boolean isLurcher() {
+		return this.dataTracker.get(LURCHER);
+	}
+
+	public void setLurcher(boolean lurcher) {
+		this.dataTracker.set(LURCHER, lurcher);
+		this.applyBuild(EntityAttributes.SCALE, LURCHER_SIZE_MODIFIER_ID, LURCHER_SCALE, lurcher);
+		this.applyBuild(EntityAttributes.MAX_HEALTH, LURCHER_HEALTH_MODIFIER_ID, LURCHER_HEALTH, lurcher);
+
+		if (lurcher) {
+			this.setCoat(WhippetCoat.LURCHER);
+			this.pace = LURCHER_PACE;
+			this.setHealth(this.getMaxHealth());
+		}
+	}
+
+	/** Puts one of the lurcher's modifiers on or takes it off again. */
+	private void applyBuild(net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.attribute.EntityAttribute> attribute, Identifier id, double amount, boolean on) {
+		EntityAttributeInstance instance = this.getAttributeInstance(attribute);
+
+		if (instance == null) {
+			return;
+		}
+
+		instance.removeModifier(id);
+
+		if (on) {
+			instance.addTemporaryModifier(new EntityAttributeModifier(id, amount, EntityAttributeModifier.Operation.ADD_VALUE));
+		}
+	}
+
+	/**
+	 * The stadium's own dog. He is not for sale, he is not coming home with you,
+	 * and he does not leave the ground.
+	 */
+	public boolean isChampion() {
+		return this.champion;
+	}
+
+	public void makeChampion(BlockPos home) {
+		this.champion = true;
+		this.setLurcher(true);
+		this.setPersistent();
+		this.setPositionTarget(home, 70);
 	}
 
 	/** Whether it has a ball in its mouth, which changes a whippet's whole day. */
@@ -1215,6 +1292,13 @@ public class WhippetEntity extends TameableEntity {
 			}
 
 			return result;
+		} else if (this.champion) {
+			// Flattered, but he runs for the stadium.
+			if (!this.getEntityWorld().isClient()) {
+				player.sendMessage(Text.translatable("entity.whippets.whippet.not_for_sale", this.getRaceName()), true);
+			}
+
+			return ActionResult.SUCCESS;
 		} else if (!this.getEntityWorld().isClient() && stack.isIn(ModTags.WHIPPET_FOOD)) {
 			stack.decrementUnlessCreative(1, player);
 			this.tryTame(player);

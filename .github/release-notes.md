@@ -13,6 +13,38 @@ way.
 **Her voice is MIT**, like the rest of the mod, by her owner's decision. The
 recordings are yours to use, change and ship in your own work.
 
+**In 2.0.0: the stadium, the Guv'nor and Bobby Brazil.**
+
+**A stadium, modelled on the Emirates and built to its size.** The little track
+from 1.7.0 was too small, so here is the real thing: an oval bowl two hundred
+blocks by a hundred and sixty, with a hundred and twenty by eighty-four of
+racing track inside it, two tiers of red seating raked one in two all the way
+round, a concourse, four tunnels in through the stand, a quartz facade with
+arched openings, a roof ring and four floodlight masts. Six traps on the home
+straight, a finish line under a gantry, and a pitch mown in stripes. It is rare,
+it wants level ground, it will not land on a village — and because it is a
+structure rather than a scattered feature you can find one with
+`/locate structure whippets:stadium`.
+
+**Bobby Brazil.** A lurcher rather than a whippet: taller, heavier and carrying
+a pace no whippet is ever born with. He is drawn from a real lurcher, he lives
+on the pitch, he is not tameable and he is not for sale. A field of good
+whippets takes him about two times in five, and he does not miss his break.
+
+**The Guv'nor.** The man who runs the ground, in a flat cap, stood by the line.
+Bring your dogs inside and right-click him: he pegs the lure, enters Bobby
+against you, calls the field to the traps and starts the card — then settles up.
+Three emeralds for winning an ordinary race here; twelve and the **Racing
+Trophy** for beating Bobby, which is the only way to get one.
+
+**The little track is whole again.** It was built as a feature, and a feature may
+only write to the chunk it was called for and the ring around it — so a track
+laid from a random spot inside a chunk ran off the end of what it was allowed to
+write, and turned up short of its traps or its finish with a thousand errors in
+the server log. It is a structure now, like the stadium: clipped chunk by chunk,
+so it comes out whole wherever the seams fall, and `/locate structure
+whippets:whippet_track` will find you one.
+
 **In 1.7.0: cats, a ball, and a track to race on.**
 
 **Cats.** There is no negotiating with a sighthound about a cat, and they do it
@@ -134,7 +166,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-1.8.0.jar`** from the assets below in beside it.
+3. Put **`whippets-2.0.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
@@ -158,8 +190,12 @@ fed and takes a collar from any dye.
 double speed, thrown in wide arcs around you, kicking up dust — then it flops
 over where it stopped and refuses to move for a few seconds.
 
-**A ball and a track.** Throw the ball and it goes; find the track and race on
-it. Cats are not safe anywhere.
+**A stadium.** Emirates-sized, out in open country, with a man in a flat cap who
+runs the meetings and a lurcher called Bobby Brazil who wins most of them.
+`/locate structure whippets:stadium`.
+
+**A ball and a little track.** Throw the ball and it goes; find the track and
+race on it. Cats are not safe anywhere.
 
 **Turbo.** Thirteen blocks a second for six seconds, and then the dog is blown.
 It goes after quarry and when you sprint; crouch and right-click one, or crouch

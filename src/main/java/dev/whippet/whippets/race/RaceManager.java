@@ -1,5 +1,6 @@
 package dev.whippet.whippets.race;
 
+import dev.whippet.whippets.entity.GuvnorEntity;
 import dev.whippet.whippets.entity.WhippetEntity;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +62,19 @@ public final class RaceManager {
 	}
 
 	public static void start(ServerPlayerEntity player, ServerWorld world, Vec3d start, Vec3d finish, List<WhippetEntity> pack) {
-		RACES.add(new WhippetRace(player, world, start, finish, pack));
+		start(player, world, start, finish, pack, null);
+	}
+
+	/** The same, but run by somebody who settles up afterwards. */
+	public static void start(
+		ServerPlayerEntity player,
+		ServerWorld world,
+		Vec3d start,
+		Vec3d finish,
+		List<WhippetEntity> pack,
+		@Nullable GuvnorEntity promoter
+	) {
+		RACES.add(new WhippetRace(player, world, start, finish, pack, promoter));
 	}
 
 	private record Lure(String dimension, Vec3d pos) {

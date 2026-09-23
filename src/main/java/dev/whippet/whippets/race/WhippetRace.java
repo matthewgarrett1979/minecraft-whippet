@@ -1,5 +1,6 @@
 package dev.whippet.whippets.race;
 
+import dev.whippet.whippets.entity.GuvnorEntity;
 import dev.whippet.whippets.entity.WhippetEntity;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.jspecify.annotations.Nullable;
 
 /**
  * One race, from traps to finish.
@@ -56,11 +58,22 @@ public class WhippetRace {
 
 	private int ticks;
 	private int placed;
+	/** Whoever put the meeting on, if anybody did, and whether his dog is in it. */
+	private final @Nullable GuvnorEntity promoter;
+	private final boolean championEntered;
 
 	public WhippetRace(ServerPlayerEntity owner, ServerWorld world, Vec3d start, Vec3d finish, List<WhippetEntity> pack) {
+		this(owner, world, start, finish, pack, null);
+	}
+
+	public WhippetRace(
+		ServerPlayerEntity owner, ServerWorld world, Vec3d start, Vec3d finish, List<WhippetEntity> pack, @Nullable GuvnorEntity promoter
+	) {
 		this.owner = owner;
 		this.world = world;
 		this.finish = finish;
+		this.promoter = promoter;
+		this.championEntered = pack.stream().anyMatch(WhippetEntity::isChampion);
 
 		Vec3d down = finish.subtract(start);
 		float yaw = (float)(MathHelper.atan2(down.z, down.x) * 180.0 / Math.PI) - 90.0F;
@@ -173,7 +186,12 @@ public class WhippetRace {
 		racer.whippet.stopRacing();
 
 		if (place == 1) {
-			// The winner is owed a lap of honour.
+			// The winner is owed a lap of honour, and if there is a promoter
+			// standing by the line, a word and whatever is in the envelope.
+			if (this.promoter != null && this.promoter.isAlive()) {
+				this.promoter.payOut(this.owner, racer.whippet, this.championEntered && !racer.whippet.isChampion());
+			}
+
 			racer.whippet.requestZoomies();
 			this.world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, this.finish.x, this.finish.y + 0.8, this.finish.z, 12, 0.6, 0.4, 0.6, 0.0);
 			this.announce(Text.translatable("race.whippets.winner", racer.whippet.getRaceName(), time).formatted(Formatting.GOLD));

@@ -244,6 +244,20 @@ COATS = [
         grey_face=(146, 141, 132, 255),
         white_front=True,
     ),
+    # Bobby Brazil, from the photograph: a lurcher, near enough black with a
+    # warm cast to him, a tan muzzle going grey, a white chin and chest and
+    # white toes on every foot.
+    Coat(
+        "lurcher",
+        (44, 38, 34, 255),
+        (70, 61, 54, 255),
+        (26, 23, 21, 255),
+        stripe=(33, 29, 26, 255),
+        stripe_period=5,
+        grey_face=(126, 112, 96, 255),
+        white_front=True,
+        nose=(26, 22, 20, 255),
+    ),
 ]
 
 
@@ -651,6 +665,103 @@ def draw_lure() -> Image:
     )
 
 
+def draw_trophy() -> Image:
+    """The trophy: a cup on a plinth, which is what beating Bobby is worth."""
+    return from_map(
+        [
+            "................",
+            "..############..",
+            "..#GGGGGGGGGG#..",
+            "...#GGGGGGGG#...",
+            "..#.#GGGGGG#.#..",
+            "..#..#GGGG#..#..",
+            "..#...#GG#...#..",
+            "...#..####..#...",
+            "........##......",
+            "........##......",
+            ".....######.....",
+            "....########....",
+            "....#WWWWWW#....",
+            "....########....",
+            "................",
+            "................",
+        ],
+        {
+            "#": (140, 106, 32, 255),
+            "G": (232, 196, 88, 255),
+            "W": (70, 54, 34, 255),
+        },
+    )
+
+
+def draw_guvnor() -> Image:
+    """
+    The Guv'nor's skin, in the standard sixty-four square layout: a man in a
+    flat cap, a brown jacket and boots, with the face of somebody who has been
+    stood by that line in the rain since before you were born.
+    """
+    skin = (214, 168, 132, 255)
+    shadow = (186, 141, 108, 255)
+    cap = (58, 52, 46, 255)
+    cap_light = (74, 67, 60, 255)
+    jacket = (94, 66, 42, 255)
+    jacket_dark = (74, 51, 32, 255)
+    shirt = (206, 202, 190, 255)
+    trousers = (48, 52, 62, 255)
+    boot = (38, 32, 28, 255)
+    eye = (38, 30, 24, 255)
+
+    image = Image(64, 64, (0, 0, 0, 0))
+
+    def block(x0, y0, w, h, colour):
+        for y in range(y0, y0 + h):
+            for x in range(x0, x0 + w):
+                image.set(x, y, colour)
+
+    # Head: top, bottom, then right, front, left, back.
+    block(8, 0, 16, 8, skin)
+    block(0, 8, 8, 8, shadow)
+    block(8, 8, 8, 8, skin)
+    block(16, 8, 8, 8, shadow)
+    block(24, 8, 8, 8, shadow)
+    image.set(10, 12, eye)
+    image.set(13, 12, eye)
+    block(10, 14, 4, 1, shadow)
+
+    # The cap, on the hat layer, with a peak over the front.
+    block(40, 0, 16, 8, cap)
+    block(32, 8, 8, 3, cap)
+    block(40, 8, 8, 3, cap_light)
+    block(48, 8, 8, 3, cap)
+    block(56, 8, 8, 3, cap)
+    # The peak, over the eyes and no further: he has a face under there.
+    block(40, 11, 8, 1, cap_light)
+
+    # Jacket over a shirt.
+    block(20, 16, 16, 4, jacket)
+    block(16, 20, 8, 12, jacket)
+    block(24, 20, 8, 12, jacket_dark)
+    block(32, 20, 8, 12, jacket)
+    block(40, 20, 8, 12, jacket_dark)
+    block(26, 20, 4, 6, shirt)
+
+    # Arms.
+    for x0 in (40, 32):
+        y0 = 16 if x0 == 40 else 48
+        block(x0 + 4, y0, 8, 4, jacket)
+        block(x0, y0 + 4, 16, 12, jacket)
+        block(x0 + 4, y0 + 13, 4, 3, skin)
+
+    # Legs and boots.
+    for x0 in (0, 16):
+        y0 = 16 if x0 == 0 else 48
+        block(x0 + 4, y0, 8, 4, trousers)
+        block(x0, y0 + 4, 16, 12, trousers)
+        block(x0, y0 + 13, 16, 3, boot)
+
+    return image
+
+
 def draw_carried_ball() -> Image:
     """The ball as the dog wears it: a 3-cube's worth of chewed tennis ball."""
     image = Image(16, 16, (0, 0, 0, 0))
@@ -764,6 +875,8 @@ def main() -> None:
     draw_whistle().write(ITEM_DIR / "whippet_whistle.png")
     draw_lure().write(ITEM_DIR / "whippet_lure.png")
     draw_ball().write(ITEM_DIR / "whippet_ball.png")
+    draw_trophy().write(ITEM_DIR / "racing_trophy.png")
+    draw_guvnor().write(ENTITY_DIR.parent / "guvnor.png")
     draw_icon().write(ASSETS / "icon.png")
 
 
