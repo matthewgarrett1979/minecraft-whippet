@@ -64,7 +64,7 @@ jobs:
 
           echo "--- server log ---"
           grep -E "Loading [0-9]+ mods|whippets [0-9]|biome modifications|Done \(" boot.log || true
-          grep -q "whippets 1" boot.log
+          grep -qE "whippets [0-9]+\.[0-9]+\.[0-9]+" boot.log
           grep -qE "Done \(" boot.log
           if grep -qE "Mod resolution failed|Failed to load|Incompatible mod set" boot.log; then
             echo "::error::the mod did not load cleanly"; exit 1
