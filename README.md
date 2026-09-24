@@ -291,8 +291,16 @@ that comes within fourteen blocks of him gets walked over to, stopped in front
 of, nosed once and wagged at — you, the Guv'nor, the other dogs, a villager who
 has wandered in, a sheep that has no idea what it is being greeted by. He stops
 what he is doing to do it, including mid-zoomies, and he gives everybody about a
-minute before he thinks they are worth saying hello to again. The only things he
-will not greet are what he hunts, what would hunt him, and an XL Bully.
+minute before he thinks they are worth saying hello to again.
+
+**There is no list of exceptions, and that is the point.** A zombie is somebody
+he has not met. So is the rabbit he is about to eat, and so is the XL Bully he
+is about to take apart: he goes over, puts his nose on it, and gets on with the
+other business afterwards. Being hit does not end it either — hit him twice for
+nine while his nose is on somebody and he will not so much as shift his feet.
+Against a bully this costs him about nine health, because he spends the first
+five seconds of the fight saying hello and being bitten for it, and then kills
+it in the next five anyway.
 
 ![A man in a flat cap and brown jacket standing in front of the stadium's red seats](docs/guvnor.png)
 

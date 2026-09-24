@@ -13,6 +13,22 @@ way.
 **Her voice is MIT**, like the rest of the mod, by her owner's decision. The
 recordings are yours to use, change and ship in your own work.
 
+**In 2.4.0: he says hello to everybody, and he means everybody.**
+
+The greeting had a list of exceptions on it — monsters, squirrels, cats, the XL
+Bully, and anything he had already decided to chase. The list is gone. A zombie
+is somebody he has not met yet. So is the rabbit he is about to eat. So is the
+bully.
+
+He now walks up to an XL Bully, stands in front of it and says hello while it
+bites him — the bully is still on all hundred and twenty of its health five
+seconds in, and Bobby is down thirteen — and then takes it apart in the next
+five and finishes on forty-four of his seventy instead of fifty-three. Being
+attacked does not interrupt him either: hit him twice for nine mid-greeting and
+he does not move a foot.
+
+The only things that still stop him are a race, a bed, and being told to sit.
+
 **In 2.3.0: Bobby says hello.**
 
 The dog that takes an XL Bully apart in nine seconds is, the rest of the time,
@@ -224,7 +240,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-2.3.0.jar`** from the assets below in beside it.
+3. Put **`whippets-2.4.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.
