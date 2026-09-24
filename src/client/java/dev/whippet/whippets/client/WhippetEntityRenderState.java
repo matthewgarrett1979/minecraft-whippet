@@ -25,6 +25,8 @@ public class WhippetEntityRenderState extends LivingEntityRenderState {
 	public float snootProgress;
 	public boolean burrowed;
 	public float tailAngle;
+	/** Stopped, pleased, and wagging at whoever has just turned up. */
+	public boolean sayingHello;
 	public float tuckProgress;
 	public @Nullable DyeColor collarColor;
 }

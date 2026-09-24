@@ -13,6 +13,20 @@ way.
 **Her voice is MIT**, like the rest of the mod, by her owner's decision. The
 recordings are yours to use, change and ship in your own work.
 
+**In 2.3.0: Bobby says hello.**
+
+The dog that takes an XL Bully apart in nine seconds is, the rest of the time,
+the friendliest animal on the ground. Anything alive within fourteen blocks of
+him gets walked over to, stopped in front of, nosed once and wagged at — you,
+the Guv'nor, the other dogs, a villager who has wandered in, a sheep that has no
+idea what it is being greeted by. He stops what he is doing to do it, the
+zoomies included, and everybody gets about a minute before he decides they are
+worth saying hello to again.
+
+An ordinary whippet still says hello to other whippets only, and is reserved
+about the rest of the world, which is the breed. This one is not the breed about
+it at all. He will not greet what he hunts, what would hunt him, or an XL Bully.
+
 **In 2.2.0: Bobby Brazil takes the bully apart.**
 
 The champion is no longer just the fastest dog on the card. He now carries
@@ -210,7 +224,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-2.2.0.jar`** from the assets below in beside it.
+3. Put **`whippets-2.3.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.

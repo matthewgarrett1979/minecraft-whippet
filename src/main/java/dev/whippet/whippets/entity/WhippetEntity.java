@@ -13,6 +13,7 @@ import dev.whippet.whippets.entity.ai.FetchGoal;
 import dev.whippet.whippets.entity.ai.GreetGoal;
 import dev.whippet.whippets.entity.ai.HuntCatsGoal;
 import dev.whippet.whippets.entity.ai.RaceGoal;
+import dev.whippet.whippets.entity.ai.SayHelloGoal;
 import dev.whippet.whippets.entity.ai.SnootGoal;
 import dev.whippet.whippets.entity.ai.TakeOnTheBullyGoal;
 import dev.whippet.whippets.entity.ai.ZoomiesGoal;
@@ -95,6 +96,7 @@ public class WhippetEntity extends TameableEntity {
 	private static final TrackedData<Boolean> BURROWED = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> BEGGING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> SNOOTING = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	private static final TrackedData<Boolean> SAYING_HELLO = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> TURBO = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> CARRYING_BALL = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Boolean> LURCHER = DataTracker.registerData(WhippetEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -273,6 +275,8 @@ public class WhippetEntity extends TameableEntity {
 	private @Nullable BlockPos beddingClaim;
 	/** The stadium's champion: untameable, and he stays on the ground. */
 	private boolean champion;
+	/** How long he has left of being pleased to see somebody. */
+	private int helloTicks;
 	private int snootTicks;
 	private boolean settledSigh;
 	/** This dog's form: a lasting edge or handicap over a racing distance. */
@@ -315,6 +319,8 @@ public class WhippetEntity extends TameableEntity {
 		// A thrown ball outranks the zoomies, the duvet and everything under
 		// them, which is the correct order of things.
 		this.goalSelector.add(3, new FetchGoal(this));
+		// Above the zoomies on purpose: he stops for people mid-lap.
+		this.goalSelector.add(3, new SayHelloGoal(this));
 		this.goalSelector.add(4, new ZoomiesGoal(this));
 		this.goalSelector.add(5, new BurrowGoal(this));
 		this.goalSelector.add(6, new CuddleGoal(this));
@@ -357,6 +363,7 @@ public class WhippetEntity extends TameableEntity {
 		builder.add(BURROWED, false);
 		builder.add(BEGGING, false);
 		builder.add(SNOOTING, false);
+		builder.add(SAYING_HELLO, false);
 		builder.add(TURBO, false);
 		builder.add(CARRYING_BALL, false);
 		builder.add(LURCHER, false);
@@ -494,6 +501,25 @@ public class WhippetEntity extends TameableEntity {
 		this.snootTicks = SNOOT_TICKS;
 		this.dataTracker.set(SNOOTING, true);
 		this.playSound(SoundEvents.ENTITY_FOX_SNIFF, this.getSoundVolume() * 0.7F, 1.2F + this.random.nextFloat() * 0.15F);
+	}
+
+	/**
+	 * Saying hello: stood still, tail up and going, and entirely taken up with
+	 * whoever has just turned up. It runs on a timer so it cannot stick on if
+	 * the goal is interrupted mid-greeting.
+	 */
+	public void sayHello(int ticks) {
+		this.helloTicks = ticks;
+		this.dataTracker.set(SAYING_HELLO, true);
+	}
+
+	public void stopSayingHello() {
+		this.helloTicks = 0;
+		this.dataTracker.set(SAYING_HELLO, false);
+	}
+
+	public boolean isSayingHello() {
+		return this.dataTracker.get(SAYING_HELLO);
 	}
 
 	public float getSnootProgress(float tickProgress) {
@@ -1448,6 +1474,10 @@ public class WhippetEntity extends TameableEntity {
 			this.dataTracker.set(SNOOTING, false);
 		}
 
+		if (this.helloTicks > 0 && --this.helloTicks == 0) {
+			this.dataTracker.set(SAYING_HELLO, false);
+		}
+
 		// Hunger only runs for a dog that has somebody to complain to.
 		if (this.isTamed() && this.hungerTicks < HUNGRY_AFTER * 3) {
 			this.hungerTicks++;
@@ -1589,7 +1619,11 @@ public class WhippetEntity extends TameableEntity {
 	 * behind at speed and creeps further under the dog the more miserable it is.
 	 */
 	public float getTailAngle() {
-		if (this.blown) {
+		if (this.isSayingHello()) {
+			// Right up. There is no mistaking a whippet that is pleased to see
+			// you, and this one is pleased to see everybody.
+			return 1.15F;
+		} else if (this.blown) {
 			// Nothing left: it comes down and stays down.
 			return 0.4F;
 		} else if (this.isTurbo()) {

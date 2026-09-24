@@ -186,6 +186,17 @@ public class WhippetEntityModel extends EntityModel<WhippetEntityRenderState> {
 			this.head.pitch += snoot * 0.3F;
 		}
 
+		// Saying hello: the tail comes up and goes, and the head comes up with
+		// it. A standing dog has no limb swing to hang a wag on, so this one is
+		// driven off the clock instead — otherwise the friendliest dog on the
+		// ground would greet you with a tail like a plank.
+		if (state.sayingHello && !state.curled && !state.inSittingPose) {
+			this.tail.yaw = MathHelper.cos(state.age * 1.1F) * 0.85F;
+			this.realTail.roll = MathHelper.sin(state.age * 1.1F) * 0.25F;
+			this.neck.pitch -= 0.18F;
+			this.head.pitch -= 0.12F;
+		}
+
 		// Begging: head over on one side, which is the whole trick.
 		if (state.begProgress > 0.001F) {
 			this.realHead.roll = state.begProgress * 0.55F;

@@ -282,6 +282,18 @@ fifty-three of his seventy. Five whippets without him all die and leave it
 standing. This is the champion only: an ordinary lurcher is still an ordinary
 lurcher, and none of it touches how he races.
 
+![Bobby Brazil, a near-black lurcher, standing nose to nose with a villager on open grass with his tail up](docs/hello.png)
+
+**And the rest of the time he is the friendliest animal on the ground.** An
+ordinary whippet says hello to other whippets and is reserved about everyone
+else, which is the breed. Bobby is not the breed about it at all: anything alive
+that comes within fourteen blocks of him gets walked over to, stopped in front
+of, nosed once and wagged at — you, the Guv'nor, the other dogs, a villager who
+has wandered in, a sheep that has no idea what it is being greeted by. He stops
+what he is doing to do it, including mid-zoomies, and he gives everybody about a
+minute before he thinks they are worth saying hello to again. The only things he
+will not greet are what he hunts, what would hunt him, and an XL Bully.
+
 ![A man in a flat cap and brown jacket standing in front of the stadium's red seats](docs/guvnor.png)
 
 **The Guv'nor** — the man who runs the place, and the only one who can put a

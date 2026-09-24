@@ -76,6 +76,7 @@ public class WhippetEntityRenderer extends AgeableMobEntityRenderer<WhippetEntit
 		state.snootProgress = whippet.getSnootProgress(tickProgress);
 		state.burrowed = whippet.isBurrowed();
 		state.tailAngle = whippet.getTailAngle();
+		state.sayingHello = whippet.isSayingHello();
 		state.tuckProgress = whippet.getTuckProgress(tickProgress);
 		state.collarColor = whippet.isTamed() ? whippet.getCollarColor() : null;
 	}
