@@ -117,6 +117,21 @@ public class WhippetEntity extends TameableEntity {
 	public static final Identifier LURCHER_HEALTH_MODIFIER_ID = Whippets.id("lurcher_health");
 	private static final double LURCHER_SCALE = 0.18;
 	private static final double LURCHER_HEALTH = 8.0;
+	public static final Identifier CHAMPION_HEALTH_MODIFIER_ID = Whippets.id("champion_health");
+	public static final Identifier CHAMPION_DAMAGE_MODIFIER_ID = Whippets.id("champion_damage");
+	public static final Identifier CHAMPION_ARMOUR_MODIFIER_ID = Whippets.id("champion_armour");
+	public static final Identifier CHAMPION_FOOTING_MODIFIER_ID = Whippets.id("champion_footing");
+	/**
+	 * What a champion is carrying that the dog he was yesterday is not. A
+	 * lurcher off the stadium is a racing dog with a bit of size on it; the one
+	 * at the top of the card has been doing this for years, against things that
+	 * bite back, and it shows in every one of these numbers.
+	 */
+	private static final double CHAMPION_HEALTH = 48.0;
+	private static final double CHAMPION_DAMAGE = 19.0;
+	private static final double CHAMPION_ARMOUR = 10.0;
+	/** He is not thrown about, which is most of what beats an ordinary dog here. */
+	private static final double CHAMPION_FOOTING = 0.7;
 	/**
 	 * A lurcher's pace. Well clear of anything a whippet is born with — the
 	 * best of them roll about 1.10 — because the whole point of the dog at the
@@ -381,6 +396,18 @@ public class WhippetEntity extends TameableEntity {
 
 		if (view.getBoolean("Lurcher", false)) {
 			this.setLurcher(true);
+		}
+
+		if (this.champion) {
+			// The modifiers are temporary ones, so they have to go back on
+			// every time he is read off the disk, or the stadium's champion
+			// comes back after a restart as an ordinary big dog.
+			float health = view.getFloat("Health", 0.0F);
+			this.championsBuild();
+
+			if (health > 0.0F) {
+				this.setHealth(Math.min(health, this.getMaxHealth()));
+			}
 		}
 	}
 
@@ -679,8 +706,23 @@ public class WhippetEntity extends TameableEntity {
 	public void makeChampion(BlockPos home) {
 		this.champion = true;
 		this.setLurcher(true);
+		this.championsBuild();
 		this.setPersistent();
 		this.setPositionTarget(home, 70);
+	}
+
+	/**
+	 * The champion's build. Health, bite, hide and footing, in that order, and
+	 * all four are needed: an XL Bully is beaten by hitting it far harder than
+	 * a whippet can, for longer than a whippet lasts, while it is unable to put
+	 * you on your back. Take any one of them away and the dog loses.
+	 */
+	private void championsBuild() {
+		this.applyBuild(EntityAttributes.MAX_HEALTH, CHAMPION_HEALTH_MODIFIER_ID, CHAMPION_HEALTH, true);
+		this.applyBuild(EntityAttributes.ATTACK_DAMAGE, CHAMPION_DAMAGE_MODIFIER_ID, CHAMPION_DAMAGE, true);
+		this.applyBuild(EntityAttributes.ARMOR, CHAMPION_ARMOUR_MODIFIER_ID, CHAMPION_ARMOUR, true);
+		this.applyBuild(EntityAttributes.KNOCKBACK_RESISTANCE, CHAMPION_FOOTING_MODIFIER_ID, CHAMPION_FOOTING, true);
+		this.setHealth(this.getMaxHealth());
 	}
 
 	/** Whether it has a ball in its mouth, which changes a whippet's whole day. */

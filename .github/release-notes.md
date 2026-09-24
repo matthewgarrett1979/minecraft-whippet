@@ -13,6 +13,25 @@ way.
 **Her voice is MIT**, like the rest of the mod, by her owner's decision. The
 recordings are yours to use, change and ship in your own work.
 
+**In 2.2.0: Bobby Brazil takes the bully apart.**
+
+The champion is no longer just the fastest dog on the card. He now carries
+seventy health against an ordinary whippet's fourteen, a twenty-two-damage bite
+against its three, ten armour and enough footing that an XL Bully cannot throw
+him — and where an ordinary whippet will not start on one alone, Bobby does not
+count anybody first.
+
+On his own he kills an XL Bully in **seven to nine seconds** and comes off it on
+fifty-three of his seventy. For scale: five ordinary whippets together all die
+and leave the same animal standing on eleven to thirty-two of its hundred and
+twenty. It also settles something that was quietly true before — a bully that
+wandered into a stadium would have killed the champion, because the ground only
+keeps three dogs. Now it is the bully's mistake.
+
+This is the champion only. An ordinary lurcher is unchanged, it does not touch
+how he races, and he still only fights back if something starts it — but if you
+are the one who starts it, twenty-two damage is what you have started.
+
 **In 2.1.0: the XL Bully, and a stadium you can actually find.**
 
 **The XL Bully.** One dog, somewhere out in the same open country the whippets
@@ -27,10 +46,9 @@ It is slow, which is the whole answer to it: five blocks a second against a
 whippet's thirteen, so you are never obliged to fight it. If you do, it bites
 for six through armour and throws what it bites. A whippet on its own knows
 better and will not start; three together will, and the first one to see it
-honks and brings in everything within twenty-four blocks. Five whippets and
-Bobby Brazil put it down in about half a minute and it usually costs three of
-them. Its bark and its growl are synthesised at a hundred and twenty hertz,
-against Bonnie's four hundred and fifty.
+honks and brings in everything within twenty-four blocks. Its bark and its growl
+are synthesised at a hundred and twenty hertz, against Bonnie's four hundred and
+fifty.
 
 **The stadium was too hard to find.** It generated fine — it was just nearly
 three thousand to five and a half thousand blocks away, which is a long walk on
@@ -192,7 +210,7 @@ neck on the half-scale model, and the poses now shrink with them.
    you have **Java 21** to play on.
 2. Put **[Fabric API](https://modrinth.com/mod/fabric-api)** (0.141.6+1.21.11
    or newer) into your `mods` folder.
-3. Put **`whippets-2.1.0.jar`** from the assets below in beside it.
+3. Put **`whippets-2.2.0.jar`** from the assets below in beside it.
 
 Works on a client, on a dedicated server, or both. For multiplayer it has to be
 installed on the server *and* on every client.

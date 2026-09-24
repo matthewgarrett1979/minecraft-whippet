@@ -272,6 +272,16 @@ He is beatable. He is not easily beatable: over the stadium's home straight a
 field of ordinary good whippets takes him about two times in five, and he does
 not miss his break the way your dogs will.
 
+**And he is not a racing dog only.** A whippet has fourteen hearts of health, a
+three-damage bite and no armour at all, which is why five of them together still
+lose to an XL Bully. Bobby carries seventy health, a twenty-two-damage bite, ten
+armour and enough footing that the bully cannot throw him — and where an
+ordinary whippet will not start on one alone, he does not count anybody first.
+On his own he takes an XL Bully apart in seven to nine seconds and walks away on
+fifty-three of his seventy. Five whippets without him all die and leave it
+standing. This is the champion only: an ordinary lurcher is still an ordinary
+lurcher, and none of it touches how he races.
+
 ![A man in a flat cap and brown jacket standing in front of the stadium's red seats](docs/guvnor.png)
 
 **The Guv'nor** — the man who runs the place, and the only one who can put a
@@ -331,8 +341,11 @@ turned up a hundred and eight whippets and three bullies, each on its own.
   dogs do not die of this. Three of them together will, and then they all go in
   at once — the first one to see it honks and brings in everything within
   twenty-four blocks.
-- **It takes the pack to finish it.** Five whippets and Bobby Brazil put it down
-  in about half a minute, and it usually costs you three of them.
+- **A pack of ordinary whippets is not enough.** Five of them together all die
+  and leave it standing on eleven to thirty-two of its hundred and twenty.
+- **Bobby Brazil is enough on his own.** Seven to nine seconds, and he comes off
+  it on fifty-three of seventy. If one wanders into a stadium, that is what it
+  has walked into.
 - It comes for you too, if you get inside a dozen blocks of it.
 
 ![Three squirrels sitting up on their haunches — black, grey and red — under the trees](docs/squirrels.png)

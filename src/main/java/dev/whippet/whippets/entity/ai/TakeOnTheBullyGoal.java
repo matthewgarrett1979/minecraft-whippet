@@ -51,6 +51,12 @@ public class TakeOnTheBullyGoal extends ActiveTargetGoal<BullyEntity> {
 
 	/** Counts the dogs stood near enough to be in on it, this one included. */
 	private boolean enoughOfUs() {
+		if (this.whippet.isChampion()) {
+			// Bobby does not count anybody. He has done this before and he was
+			// on his own that time as well.
+			return true;
+		}
+
 		Box shoulder = this.whippet.getBoundingBox().expand(SHOULDER_TO_SHOULDER);
 		int dogs = 1;
 
